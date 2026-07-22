@@ -6,328 +6,169 @@
 <title>BestFive Masters Pick'em</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#091020;
-  --bg2:#0d1730;
-  --bg-card:#0f1c38;
-  --card-border:rgba(201,168,76,0.12);
-  --gold:#c9a84c;
-  --gold-light:#e8dcc8;
-  --gold-dim:#7a5e1e;
+  --bg:#091020;--bg2:#0d1730;
+  --bg-card:rgba(15,28,56,0.7);
+  --card-border:rgba(201,168,76,0.1);
+  --gold:#c9a84c;--gold-light:#e8dcc8;--gold-dim:#7a5e1e;
   --gold-glow:rgba(201,168,76,0.25);
-  --circle-bg:linear-gradient(145deg,#e4d8b4,#c8b88a);
-  --circle-border:#a89860;
-  --circle-text:#4a3e1e;
-  --adv-bg:#132e14;
-  --adv-border:#2f7830;
-  --adv-text:#c8f0c8;
-  --elim-bg:#2e1218;
-  --elim-border:#7a2838;
-  --elim-text:#f0c8cc;
-  --text:#e4ddc8;
-  --text-dim:#5a5545;
-  --line-color:rgba(201,168,76,0.35);
+  --circle-bg:linear-gradient(145deg,#ddd4b8,#b8a878);
+  --circle-border:#9a8858;--circle-text:#4a3e1e;
+  --adv-bg:rgba(20,55,22,0.85);--adv-border:#38a040;--adv-glow:rgba(56,160,64,0.2);--adv-text:#c8f0c8;
+  --elim-bg:rgba(55,18,24,0.85);--elim-border:#a03040;--elim-glow:rgba(160,48,64,0.2);--elim-text:#f0c8cc;
+  --text:#e4ddc8;--text-dim:#5a5545;
+  --line-color:rgba(201,168,76,0.3);
 }
 html{-webkit-text-size-adjust:100%}
-body{
-  font-family:'Inter',system-ui,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  -webkit-user-select:none;user-select:none;
-  overflow-x:hidden;
-}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-user-select:none;user-select:none;overflow-x:hidden}
+
+/* ===== CAPTURE AREA (for screenshot) ===== */
+#captureArea{background:var(--bg)}
 
 /* ===== HEADER ===== */
-.header{
-  text-align:center;
-  padding:20px 16px 14px;
-  background:linear-gradient(180deg,#0c1528 0%,var(--bg) 100%);
-  position:relative;
-  border-bottom:1px solid rgba(201,168,76,0.08);
-}
-.header::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,transparent 5%,var(--gold) 50%,transparent 95%);
-}
-.header-logo{
-  height:28px;
-  opacity:0.5;
-  margin-bottom:8px;
-}
-.header h1{
-  font-family:'Oswald',sans-serif;
-  font-size:clamp(28px,5.5vw,50px);
-  font-weight:700;
-  letter-spacing:3px;
-  text-transform:uppercase;
-  background:linear-gradient(180deg,#f4ecce 0%,var(--gold) 45%,var(--gold-dim) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
-  line-height:1.05;
-}
-.header .sub{
-  font-family:'Oswald',sans-serif;
-  font-size:clamp(11px,1.6vw,14px);
-  font-weight:500;
-  color:var(--gold-dim);
-  letter-spacing:5px;
-  text-transform:uppercase;
-  margin-top:2px;
-}
-.header .inst{
-  font-size:11px;font-weight:500;
-  color:var(--text-dim);margin-top:10px;
-}
+.header{text-align:center;padding:20px 16px 12px;position:relative}
+.header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 5%,var(--gold) 50%,transparent 95%)}
+.header-logo{height:26px;opacity:0.45;margin-bottom:6px}
+.header h1{font-family:'Oswald',sans-serif;font-size:clamp(28px,5.5vw,48px);font-weight:700;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(180deg,#f4ecce 0%,var(--gold) 45%,var(--gold-dim) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.05}
+.header .sub{font-family:'Oswald',sans-serif;font-size:clamp(11px,1.6vw,14px);font-weight:500;color:var(--gold-dim);letter-spacing:5px;text-transform:uppercase;margin-top:2px}
 
-/* ===== STAGE LABEL ===== */
-.stage-label{
-  font-family:'Oswald',sans-serif;
-  font-size:20px;font-weight:700;
-  letter-spacing:3px;text-transform:uppercase;
-  text-align:center;
-  color:var(--gold);
-  padding:14px 0 2px;
-}
+/* ===== STAGE ===== */
+.stage-label{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;letter-spacing:3px;text-transform:uppercase;text-align:center;color:var(--gold);padding:10px 0 4px}
 
-/* ===== POOL ===== */
+/* ===== POOL (hidden in screenshot) ===== */
 .pool-wrap{padding:6px 16px 10px;max-width:1300px;margin:0 auto}
-.pool-label{
-  font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;
-  letter-spacing:2px;text-transform:uppercase;
-  color:var(--text-dim);text-align:center;margin-bottom:6px;
-}
+.pool-label{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);text-align:center;margin-bottom:6px}
 .pool-label span{color:var(--gold)}
-.team-pool{
-  display:flex;flex-wrap:wrap;gap:6px;justify-content:center;
-  min-height:50px;padding:10px;
-  background:var(--bg-card);border-radius:10px;
-  border:1px solid var(--card-border);
-}
+.pool-info{font-size:11px;color:var(--text-dim);text-align:center;margin-bottom:6px}
+.team-pool{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:50px;padding:10px;background:rgba(15,28,56,0.6);border-radius:10px;border:1px solid var(--card-border)}
 
 /* ===== TEAM LOGO ===== */
-.team-logo{
-  width:44px;height:44px;border-radius:50%;
-  background:#161830;
-  border:2px solid rgba(255,255,255,0.1);
-  cursor:grab;position:relative;overflow:hidden;
-  transition:transform .15s,border-color .15s,box-shadow .15s;
-  flex-shrink:0;
-}
+.team-logo{width:44px;height:44px;border-radius:50%;background:#161830;border:2px solid rgba(255,255,255,0.1);cursor:grab;position:relative;overflow:hidden;transition:transform .15s,border-color .15s,box-shadow .15s;flex-shrink:0}
 .team-logo:active{cursor:grabbing}
-.team-logo:hover{
-  border-color:var(--gold);transform:scale(1.12);
-  box-shadow:0 0 10px var(--gold-glow);z-index:10;
-}
+.team-logo:hover{border-color:var(--gold);transform:scale(1.12);box-shadow:0 0 10px var(--gold-glow);z-index:10}
 .team-logo img{width:100%;height:100%;object-fit:contain;padding:2px;pointer-events:none}
-.team-logo .tip{
-  position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);
-  background:rgba(0,0,0,0.92);color:#fff;font-size:9px;font-weight:600;
-  padding:2px 5px;border-radius:3px;white-space:nowrap;
-  opacity:0;pointer-events:none;transition:opacity .15s;z-index:100;
-}
+.team-logo .tip{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.92);color:#fff;font-size:9px;font-weight:600;padding:2px 5px;border-radius:3px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;z-index:100}
 .team-logo:hover .tip{opacity:1}
 .team-logo.dragging{opacity:0.25;transform:scale(0.85)}
-.team-logo.in-slot{width:34px;height:34px}
+.team-logo.in-slot{width:36px;height:36px}
 
-/* ===== BRACKET WRAPPER ===== */
-.bracket-scroll{
-  overflow-x:auto;overflow-y:visible;
-  padding:14px 20px 10px;
-  -webkit-overflow-scrolling:touch;
-}
+/* ===== BRACKET ===== */
+.bracket-scroll{overflow-x:auto;overflow-y:visible;padding:10px 20px 8px;-webkit-overflow-scrolling:touch;text-align:center}
 .bracket-scroll::-webkit-scrollbar{height:5px}
 .bracket-scroll::-webkit-scrollbar-track{background:rgba(255,255,255,0.02);border-radius:3px}
 .bracket-scroll::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:3px}
 
-.bracket{
-  display:flex;gap:0;align-items:stretch;
-  min-width:1180px;position:relative;
-  padding:4px 0;
-}
-.round-col{
-  display:flex;flex-direction:column;justify-content:center;
-  gap:8px;flex-shrink:0;padding:0 18px;
-}
+.bracket{display:inline-flex;gap:0;align-items:stretch;position:relative;padding:4px 0}
+.round-col{display:flex;flex-direction:column;justify-content:center;gap:6px;flex-shrink:0;padding:0 14px;position:relative;z-index:1}
 
-/* ===== MATCH BOX ===== */
-.match-box{
-  background:var(--bg-card);
-  border:1px solid var(--card-border);
-  border-radius:10px;padding:4px 10px 8px;
-  position:relative;
-}
-.box-hdr{
-  font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;
-  color:var(--gold);text-align:center;padding:2px 0 5px;
-  letter-spacing:2px;
-}
-.mr{
-  display:flex;align-items:center;justify-content:center;
-  gap:5px;margin-bottom:4px;
-}
+/* ===== MATCH BOX (small, subtle — context only) ===== */
+.match-box{background:var(--bg-card);border:1px solid var(--card-border);border-radius:8px;padding:3px 8px 6px;opacity:0.75}
+.box-hdr{font-family:'Oswald',sans-serif;font-size:12px;font-weight:700;color:var(--gold-dim);text-align:center;padding:1px 0 3px;letter-spacing:1px}
+.mr{display:flex;align-items:center;justify-content:center;gap:3px;margin-bottom:2px}
 .mr:last-child{margin-bottom:0}
-.qc{
-  width:30px;height:30px;border-radius:50%;
-  background:var(--circle-bg);
-  border:2px solid var(--circle-border);
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;
-  color:var(--circle-text);flex-shrink:0;
-  box-shadow:0 1px 3px rgba(0,0,0,0.35);
-}
-.qc.qc-gold{
-  background:linear-gradient(145deg,#f0e4c0,#c8b080);
-  border-color:#a89050;
-}
-.vs{
-  font-family:'Oswald',sans-serif;font-size:10px;font-weight:700;
-  color:var(--text-dim);letter-spacing:1px;min-width:18px;text-align:center;
-}
+.qc{width:22px;height:22px;border-radius:50%;background:var(--circle-bg);border:1.5px solid var(--circle-border);display:flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;color:var(--circle-text);flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,0.3)}
+.vs{font-family:'Oswald',sans-serif;font-size:8px;font-weight:700;color:rgba(255,255,255,0.2);letter-spacing:1px;min-width:14px;text-align:center}
 
-/* ===== RESULT BOX ===== */
-.result-box{
-  border-radius:10px;padding:6px 10px 10px;
-  position:relative;
-}
-.result-box.adv{background:var(--adv-bg);border:2px solid var(--adv-border)}
-.result-box.elim{background:var(--elim-bg);border:2px solid var(--elim-border)}
-.res-hdr{
-  font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;
-  text-align:center;padding:1px 0 6px;letter-spacing:2px;text-transform:uppercase;
-}
+/* ===== RESULT BOX (large, prominent — the focus) ===== */
+.result-box{border-radius:12px;padding:8px 14px 12px;position:relative}
+.result-box.adv{background:var(--adv-bg);border:2px solid var(--adv-border);box-shadow:0 0 20px var(--adv-glow),inset 0 0 20px rgba(56,160,64,0.05)}
+.result-box.elim{background:var(--elim-bg);border:2px solid var(--elim-border);box-shadow:0 0 20px var(--elim-glow),inset 0 0 20px rgba(160,48,64,0.05)}
+.res-hdr{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;text-align:center;padding:1px 0 8px;letter-spacing:2px;text-transform:uppercase}
 .result-box.adv .res-hdr{color:var(--adv-text)}
 .result-box.elim .res-hdr{color:var(--elim-text)}
-.res-slots{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.res-slots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 
-/* ===== DROP SLOT ===== */
-.drop-slot{
-  width:38px;height:38px;border-radius:50%;
-  border:2px dashed rgba(255,255,255,0.18);
-  background:rgba(255,255,255,0.03);
-  display:flex;align-items:center;justify-content:center;
-  transition:all .2s;flex-shrink:0;
-}
-.drop-slot .sq{
-  font-family:'Oswald',sans-serif;font-size:17px;font-weight:700;
-  color:rgba(255,255,255,0.12);
-}
-.drop-slot.drag-over{
-  border-color:var(--gold);border-style:solid;
-  background:var(--gold-glow);
-  box-shadow:0 0 14px var(--gold-glow);transform:scale(1.1);
-}
-.drop-slot.filled{
-  border-style:solid;border-color:rgba(255,255,255,0.2);
-  background:rgba(22,24,48,0.7);padding:1px;
-}
+/* ===== DROP SLOT (larger than match circles) ===== */
+.drop-slot{width:42px;height:42px;border-radius:50%;border:2px dashed rgba(255,255,255,0.2);background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.drop-slot .sq{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;color:rgba(255,255,255,0.15)}
+.drop-slot.drag-over{border-color:var(--gold);border-style:solid;background:var(--gold-glow);box-shadow:0 0 14px var(--gold-glow);transform:scale(1.1)}
+.drop-slot.filled{border-style:solid;border-color:rgba(255,255,255,0.2);background:rgba(22,24,48,0.7);padding:1px}
 .drop-slot.filled.ds-adv{border-color:var(--adv-border)}
 .drop-slot.filled.ds-elim{border-color:var(--elim-border)}
 
 /* ===== SPACERS ===== */
-.sp{height:6px}.sp-lg{height:14px}
+.sp{height:4px}.sp-lg{height:10px}
 
 /* ===== SVG CONNECTORS ===== */
-.connector-svg{
-  position:absolute;top:0;left:0;width:100%;height:100%;
-  pointer-events:none;z-index:0;
-}
-.connector-svg path{
-  fill:none;
-  stroke:var(--line-color);
-  stroke-width:1.5;
-}
+.connector-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.connector-svg path{fill:none;stroke:var(--line-color);stroke-width:1.5}
 
 /* ===== COMPLETION ===== */
-.completion{
-  display:none;text-align:center;
-  padding:10px 16px;max-width:1300px;margin:2px auto 0;
-}
+.completion{display:none;text-align:center;padding:8px 16px;max-width:1300px;margin:2px auto 0}
 .completion.show{display:block}
-.completion p{
-  color:var(--gold);font-family:'Oswald',sans-serif;
-  font-size:16px;font-weight:700;letter-spacing:2px;
-  background:linear-gradient(90deg,transparent,rgba(201,168,76,0.1),transparent);
-  padding:10px;border-radius:8px;border:1px solid rgba(201,168,76,0.2);
-}
+.completion p{color:var(--gold);font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.1),transparent);padding:8px;border-radius:8px;border:1px solid rgba(201,168,76,0.15)}
 
 /* ===== ACTIONS ===== */
-.actions{display:flex;gap:12px;justify-content:center;padding:6px 16px 20px}
-.btn{
-  font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;
-  letter-spacing:1px;text-transform:uppercase;
-  padding:10px 28px;border-radius:8px;border:none;cursor:pointer;
-  transition:all .2s;
-}
-.btn-reset{
-  background:rgba(255,255,255,0.06);color:var(--text-dim);
-  border:1px solid rgba(255,255,255,0.08);
-}
+.actions{display:flex;gap:12px;justify-content:center;padding:8px 16px 20px;flex-wrap:wrap}
+.btn{font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 28px;border-radius:8px;border:none;cursor:pointer;transition:all .2s}
+.btn-reset{background:rgba(255,255,255,0.06);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08)}
 .btn-reset:hover{background:rgba(255,255,255,0.1);color:var(--text)}
+.btn-save{background:linear-gradient(135deg,var(--gold-dim),var(--gold));color:#0a0a0a}
+.btn-save:hover{box-shadow:0 0 20px var(--gold-glow);transform:translateY(-1px)}
+.btn-save:disabled{opacity:0.3;cursor:not-allowed;transform:none;box-shadow:none}
 
-.watermark{
-  text-align:center;padding:2px 16px 14px;
-  font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;
-  letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;opacity:0.3;
-}
+.watermark{text-align:center;padding:6px 16px 10px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;opacity:0.3}
 
 /* TOUCH GHOST */
-.touch-ghost{
-  position:fixed;pointer-events:none;z-index:9999;
-  opacity:0.85;transform:translate(-50%,-50%) scale(1.2);
-  filter:drop-shadow(0 4px 12px rgba(0,0,0,0.7));
-  width:44px;height:44px;border-radius:50%;
-}
+.touch-ghost{position:fixed;pointer-events:none;z-index:9999;opacity:0.85;transform:translate(-50%,-50%) scale(1.2);filter:drop-shadow(0 4px 12px rgba(0,0,0,0.7));width:44px;height:44px;border-radius:50%}
 
-/* Ensure round-col z-index above SVG */
-.round-col{position:relative;z-index:1}
+/* ===== SAVING OVERLAY ===== */
+.save-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9998;align-items:center;justify-content:center}
+.save-overlay.show{display:flex}
+.save-msg{font-family:'Oswald',sans-serif;font-size:18px;color:var(--gold);letter-spacing:2px}
 
 @media(max-width:600px){
-  .team-logo{width:38px;height:38px}
-  .team-logo.in-slot{width:30px;height:30px}
-  .drop-slot{width:34px;height:34px}
-  .qc{width:26px;height:26px;font-size:13px}
-  .bracket{min-width:1000px}
+  .team-logo{width:38px;height:38px}.team-logo.in-slot{width:30px;height:30px}
+  .drop-slot{width:36px;height:36px}.qc{width:20px;height:20px;font-size:10px}
 }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <img src="logos_web/b5_logo.png" class="header-logo" alt="Best Five">
-  <h1>BestFive Masters</h1>
-  <div class="sub">Experience the Major Format</div>
-  <div class="inst">Drag team logos into result zones · Screenshot &amp; share your picks</div>
-</div>
-
-<div class="stage-label">— Stage 1 —</div>
-
-<div class="pool-wrap">
-  <div class="pool-label">Team Pool · <span id="counter">0</span> / 16 placed</div>
-  <div class="team-pool" id="teamPool"></div>
-</div>
-
-<div class="completion" id="completionBanner">
-  <p>✦ PICK'EM COMPLETE — SCREENSHOT &amp; SHARE ✦</p>
-</div>
-
-<div class="bracket-scroll">
-  <div class="bracket" id="bracket">
-    <svg class="connector-svg" id="connSvg" xmlns="http://www.w3.org/2000/svg"></svg>
-    <div class="round-col" id="col0"></div>
-    <div class="round-col" id="col1"></div>
-    <div class="round-col" id="col2"></div>
-    <div class="round-col" id="col3"></div>
-    <div class="round-col" id="col4"></div>
+<!-- ===== SCREENSHOT CAPTURE AREA ===== -->
+<div id="captureArea">
+  <div class="header">
+    <img src="logos_web/b5_logo.png" class="header-logo" alt="Best Five">
+    <h1>BestFive Masters</h1>
+    <div class="sub">Experience the Major Format</div>
   </div>
+  <div class="stage-label">— Stage 1 —</div>
+
+  <!-- Pool: inside capture but hidden when saving -->
+  <div class="pool-wrap" id="poolWrap">
+    <div class="pool-label">Team Pool · <span id="counter">0</span> / 16 placed</div>
+    <div class="pool-info">Drag logos into the green &amp; red zones · Double-click to remove</div>
+    <div class="team-pool" id="teamPool"></div>
+  </div>
+
+  <div class="completion" id="completionBanner">
+    <p>✦ PICK'EM COMPLETE — SAVE &amp; SHARE ✦</p>
+  </div>
+
+  <div class="bracket-scroll" id="bracketScroll">
+    <div class="bracket" id="bracket">
+      <svg class="connector-svg" id="connSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="round-col" id="col0"></div>
+      <div class="round-col" id="col1"></div>
+      <div class="round-col" id="col2"></div>
+      <div class="round-col" id="col3"></div>
+      <div class="round-col" id="col4"></div>
+    </div>
+  </div>
+
+  <div class="watermark">BestFive Masters · Pick'em Challenge</div>
 </div>
+<!-- END CAPTURE AREA -->
 
 <div class="actions">
   <button class="btn btn-reset" onclick="resetAll()">Reset All</button>
+  <button class="btn btn-save" id="btnSave" onclick="saveScreenshot()" disabled>Save Screenshot</button>
 </div>
-<div class="watermark">BestFive Masters · Pick'em Challenge</div>
+
+<div class="save-overlay" id="saveOverlay"><div class="save-msg">Generating image...</div></div>
 
 <script>
 const teams=[
@@ -351,216 +192,131 @@ const teams=[
 
 let draggedTeam=null,touchGhost=null;
 
-// ===== BUILD =====
-function matchRows(n){
-  let h='';
-  for(let i=0;i<n;i++) h+=`<div class="mr"><div class="qc">?</div><span class="vs">VS</span><div class="qc">?</div></div>`;
-  return h;
-}
-function matchBox(id,label,n){
-  return `<div class="match-box" id="${id}"><div class="box-hdr">${label}</div>${matchRows(n)}</div>`;
-}
-function resultBox(id,label,slots,type){
-  const sc=type==='adv'?'ds-adv':'ds-elim';
-  let s='';
-  for(let i=0;i<slots;i++) s+=`<div class="drop-slot ${sc}" data-type="${type}"><span class="sq">?</span></div>`;
-  return `<div class="result-box ${type}" id="${id}"><div class="res-hdr">${label}</div><div class="res-slots">${s}</div></div>`;
-}
+function matchRows(n){let h='';for(let i=0;i<n;i++)h+=`<div class="mr"><div class="qc">?</div><span class="vs">VS</span><div class="qc">?</div></div>`;return h}
+function matchBox(id,label,n){return`<div class="match-box" id="${id}"><div class="box-hdr">${label}</div>${matchRows(n)}</div>`}
+function resultBox(id,label,slots,type){const sc=type==='adv'?'ds-adv':'ds-elim';let s='';for(let i=0;i<slots;i++)s+=`<div class="drop-slot ${sc}" data-type="${type}"><span class="sq">?</span></div>`;return`<div class="result-box ${type}" id="${id}"><div class="res-hdr">${label}</div><div class="res-slots">${s}</div></div>`}
 
 function buildBracket(){
   document.getElementById('col0').innerHTML=matchBox('b00','0 : 0',8);
-  document.getElementById('col1').innerHTML=
-    matchBox('b10','1 : 0',4)+'<div class="sp-lg"></div>'+matchBox('b01','0 : 1',4);
-  document.getElementById('col2').innerHTML=
-    matchBox('b20','2 : 0',2)+'<div class="sp"></div>'+
-    matchBox('b11','1 : 1',4)+'<div class="sp"></div>'+
-    matchBox('b02','0 : 2',2);
-  document.getElementById('col3').innerHTML=
-    resultBox('b30','3 : 0  ADVANCE',2,'adv')+'<div class="sp"></div>'+
-    matchBox('b21','2 : 1',3)+'<div class="sp"></div>'+
-    matchBox('b12','1 : 2',3)+'<div class="sp"></div>'+
-    resultBox('b03','0 : 3  ELIMINATED',2,'elim');
-  document.getElementById('col4').innerHTML=
-    resultBox('b3132','3:1 · 3:2  ADVANCE',6,'adv')+'<div class="sp"></div>'+
-    matchBox('b22','2 : 2',3)+'<div class="sp"></div>'+
-    resultBox('b1323','1:3 · 2:3  ELIMINATED',6,'elim');
+  document.getElementById('col1').innerHTML=matchBox('b10','1 : 0',4)+'<div class="sp-lg"></div>'+matchBox('b01','0 : 1',4);
+  document.getElementById('col2').innerHTML=matchBox('b20','2 : 0',2)+'<div class="sp"></div>'+matchBox('b11','1 : 1',4)+'<div class="sp"></div>'+matchBox('b02','0 : 2',2);
+  document.getElementById('col3').innerHTML=resultBox('b30','3 : 0  ADVANCE',2,'adv')+'<div class="sp"></div>'+matchBox('b21','2 : 1',3)+'<div class="sp"></div>'+matchBox('b12','1 : 2',3)+'<div class="sp"></div>'+resultBox('b03','0 : 3  ELIMINATED',2,'elim');
+  document.getElementById('col4').innerHTML=resultBox('b3132','3:1 · 3:2  ADVANCE',6,'adv')+'<div class="sp"></div>'+matchBox('b22','2 : 2',3)+'<div class="sp"></div>'+resultBox('b1323','1:3 · 2:3  ELIMINATED',6,'elim');
 }
 
-// ===== CONNECTORS =====
-const connections=[
-  ['b00','b10'],['b00','b01'],
-  ['b10','b20'],['b10','b11'],
-  ['b01','b11'],['b01','b02'],
-  ['b20','b30'],['b20','b21'],
-  ['b11','b21'],['b11','b12'],
-  ['b02','b12'],['b02','b03'],
-  ['b21','b3132'],['b21','b22'],
-  ['b12','b22'],['b12','b1323'],
-  ['b22','b3132'],['b22','b1323'],
-];
+const connections=[['b00','b10'],['b00','b01'],['b10','b20'],['b10','b11'],['b01','b11'],['b01','b02'],['b20','b30'],['b20','b21'],['b11','b21'],['b11','b12'],['b02','b12'],['b02','b03'],['b21','b3132'],['b21','b22'],['b12','b22'],['b12','b1323'],['b22','b3132'],['b22','b1323']];
 
 function drawConnectors(){
   const svg=document.getElementById('connSvg');
   const bracket=document.getElementById('bracket');
   const bRect=bracket.getBoundingClientRect();
   svg.setAttribute('viewBox',`0 0 ${bracket.scrollWidth} ${bracket.scrollHeight}`);
-  svg.style.width=bracket.scrollWidth+'px';
-  svg.style.height=bracket.scrollHeight+'px';
-
+  svg.style.width=bracket.scrollWidth+'px';svg.style.height=bracket.scrollHeight+'px';
+  const srcMap={},dstMap={};
+  connections.forEach(([s,d])=>{if(!srcMap[s])srcMap[s]=[];srcMap[s].push(d);if(!dstMap[d])dstMap[d]=[];dstMap[d].push(s)});
   let paths='';
-  // Group connections by source to offset multiple outputs
-  const srcMap={};
-  connections.forEach(([s,d])=>{
-    if(!srcMap[s]) srcMap[s]=[];
-    srcMap[s].push(d);
-  });
-  // Group by destination for offset
-  const dstMap={};
-  connections.forEach(([s,d])=>{
-    if(!dstMap[d]) dstMap[d]=[];
-    dstMap[d].push(s);
-  });
-
   connections.forEach(([srcId,dstId])=>{
-    const srcEl=document.getElementById(srcId);
-    const dstEl=document.getElementById(dstId);
-    if(!srcEl||!dstEl) return;
-
-    const sr=srcEl.getBoundingClientRect();
-    const dr=dstEl.getBoundingClientRect();
-
-    // Source: right edge
-    const srcOuts=srcMap[srcId]||[];
-    const srcIdx=srcOuts.indexOf(dstId);
-    const srcTotal=srcOuts.length;
-    const srcFrac=(srcIdx+1)/(srcTotal+1);
-    const x1=sr.right-bRect.left;
-    const y1=sr.top-bRect.top+sr.height*srcFrac;
-
-    // Dest: left edge
-    const dstIns=dstMap[dstId]||[];
-    const dstIdx=dstIns.indexOf(srcId);
-    const dstTotal=dstIns.length;
-    const dstFrac=(dstIdx+1)/(dstTotal+1);
-    const x2=dr.left-bRect.left;
-    const y2=dr.top-bRect.top+dr.height*dstFrac;
-
+    const srcEl=document.getElementById(srcId),dstEl=document.getElementById(dstId);
+    if(!srcEl||!dstEl)return;
+    const sr=srcEl.getBoundingClientRect(),dr=dstEl.getBoundingClientRect();
+    const srcOuts=srcMap[srcId]||[];const srcFrac=(srcOuts.indexOf(dstId)+1)/(srcOuts.length+1);
+    const dstIns=dstMap[dstId]||[];const dstFrac=(dstIns.indexOf(srcId)+1)/(dstIns.length+1);
+    const x1=sr.right-bRect.left,y1=sr.top-bRect.top+sr.height*srcFrac;
+    const x2=dr.left-bRect.left,y2=dr.top-bRect.top+dr.height*dstFrac;
     const dx=(x2-x1)*0.45;
     paths+=`<path d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}"/>`;
   });
-
   svg.innerHTML=paths;
 }
 
-// ===== INIT =====
 function init(){
   buildBracket();
   const pool=document.getElementById('teamPool');
   teams.forEach(t=>pool.appendChild(createTeamEl(t)));
-
   document.querySelectorAll('.drop-slot').forEach(slot=>{
     slot.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move'});
-    slot.addEventListener('dragenter',e=>{
-      e.preventDefault();
-      const s=e.target.closest('.drop-slot');
-      if(s&&!s.classList.contains('filled'))s.classList.add('drag-over');
-    });
-    slot.addEventListener('dragleave',e=>{
-      const s=e.target.closest('.drop-slot');if(s)s.classList.remove('drag-over');
-    });
-    slot.addEventListener('drop',e=>{
-      e.preventDefault();
-      const s=e.target.closest('.drop-slot');if(!s)return;
-      s.classList.remove('drag-over');
-      if(s.classList.contains('filled')){const ex=s.querySelector('.team-logo');if(ex)returnToPool(ex)}
-      if(draggedTeam)placeInSlot(draggedTeam,s);
-    });
+    slot.addEventListener('dragenter',e=>{e.preventDefault();const s=e.target.closest('.drop-slot');if(s&&!s.classList.contains('filled'))s.classList.add('drag-over')});
+    slot.addEventListener('dragleave',e=>{const s=e.target.closest('.drop-slot');if(s)s.classList.remove('drag-over')});
+    slot.addEventListener('drop',e=>{e.preventDefault();const s=e.target.closest('.drop-slot');if(!s)return;s.classList.remove('drag-over');if(s.classList.contains('filled')){const ex=s.querySelector('.team-logo');if(ex)returnToPool(ex)}if(draggedTeam)placeInSlot(draggedTeam,s)});
   });
-
-  // Draw connectors after layout
   requestAnimationFrame(()=>{requestAnimationFrame(drawConnectors)});
   window.addEventListener('resize',drawConnectors);
 }
 
 function createTeamEl(t){
-  const el=document.createElement('div');
-  el.className='team-logo';el.draggable=true;el.dataset.teamId=t.id;
+  const el=document.createElement('div');el.className='team-logo';el.draggable=true;el.dataset.teamId=t.id;
   el.innerHTML=`<img src="${t.logo}" alt="${t.name}" draggable="false"><span class="tip">${t.name}</span>`;
-  el.addEventListener('dragstart',e=>{
-    draggedTeam=el;el.classList.add('dragging');
-    e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',t.id);
-  });
-  el.addEventListener('dragend',()=>{
-    if(draggedTeam)draggedTeam.classList.remove('dragging');
-    draggedTeam=null;
-    document.querySelectorAll('.drop-slot').forEach(s=>s.classList.remove('drag-over'));
-  });
-  el.addEventListener('touchstart',onTS,{passive:false});
-  el.addEventListener('touchmove',onTM,{passive:false});
-  el.addEventListener('touchend',onTE,{passive:false});
+  el.addEventListener('dragstart',e=>{draggedTeam=el;el.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',t.id)});
+  el.addEventListener('dragend',()=>{if(draggedTeam)draggedTeam.classList.remove('dragging');draggedTeam=null;document.querySelectorAll('.drop-slot').forEach(s=>s.classList.remove('drag-over'))});
+  el.addEventListener('touchstart',onTS,{passive:false});el.addEventListener('touchmove',onTM,{passive:false});el.addEventListener('touchend',onTE,{passive:false});
   el.addEventListener('dblclick',()=>{if(el.closest('.drop-slot'))returnToPool(el)});
   return el;
 }
 
-function onTS(e){
-  const el=e.target.closest('.team-logo');if(!el)return;
-  draggedTeam=el;const t=e.touches[0];
-  touchGhost=el.cloneNode(true);touchGhost.className='team-logo touch-ghost';
-  document.body.appendChild(touchGhost);
-  touchGhost.style.left=t.clientX+'px';touchGhost.style.top=t.clientY+'px';
-  el.classList.add('dragging');e.preventDefault();
-}
-function onTM(e){
-  if(!draggedTeam||!touchGhost)return;e.preventDefault();
-  const t=e.touches[0];
-  touchGhost.style.left=t.clientX+'px';touchGhost.style.top=t.clientY+'px';
-  document.querySelectorAll('.drop-slot').forEach(s=>s.classList.remove('drag-over'));
-  const elem=document.elementFromPoint(t.clientX,t.clientY);
-  const slot=elem?elem.closest('.drop-slot'):null;
-  if(slot&&!slot.classList.contains('filled'))slot.classList.add('drag-over');
-}
-function onTE(e){
-  if(!draggedTeam)return;
-  const t=e.changedTouches[0];
-  if(touchGhost){touchGhost.remove();touchGhost=null}
-  const elem=document.elementFromPoint(t.clientX,t.clientY);
-  const slot=elem?elem.closest('.drop-slot'):null;
-  const pool=elem?elem.closest('.team-pool'):null;
-  document.querySelectorAll('.drop-slot').forEach(s=>s.classList.remove('drag-over'));
-  if(slot){
-    if(slot.classList.contains('filled')){const ex=slot.querySelector('.team-logo');if(ex&&ex!==draggedTeam)returnToPool(ex)}
-    placeInSlot(draggedTeam,slot);
-  }else if(pool){returnToPool(draggedTeam)}
-  draggedTeam.classList.remove('dragging');draggedTeam=null;
-}
+function onTS(e){const el=e.target.closest('.team-logo');if(!el)return;draggedTeam=el;const t=e.touches[0];touchGhost=el.cloneNode(true);touchGhost.className='team-logo touch-ghost';document.body.appendChild(touchGhost);touchGhost.style.left=t.clientX+'px';touchGhost.style.top=t.clientY+'px';el.classList.add('dragging');e.preventDefault()}
+function onTM(e){if(!draggedTeam||!touchGhost)return;e.preventDefault();const t=e.touches[0];touchGhost.style.left=t.clientX+'px';touchGhost.style.top=t.clientY+'px';document.querySelectorAll('.drop-slot').forEach(s=>s.classList.remove('drag-over'));const elem=document.elementFromPoint(t.clientX,t.clientY);const slot=elem?elem.closest('.drop-slot'):null;if(slot&&!slot.classList.contains('filled'))slot.classList.add('drag-over')}
+function onTE(e){if(!draggedTeam)return;const t=e.changedTouches[0];if(touchGhost){touchGhost.remove();touchGhost=null}const elem=document.elementFromPoint(t.clientX,t.clientY);const slot=elem?elem.closest('.drop-slot'):null;const pool=elem?elem.closest('.team-pool'):null;document.querySelectorAll('.drop-slot').forEach(s=>s.classList.remove('drag-over'));if(slot){if(slot.classList.contains('filled')){const ex=slot.querySelector('.team-logo');if(ex&&ex!==draggedTeam)returnToPool(ex)}placeInSlot(draggedTeam,slot)}else if(pool){returnToPool(draggedTeam)}draggedTeam.classList.remove('dragging');draggedTeam=null}
 
-function placeInSlot(el,slot){
-  const q=slot.querySelector('.sq');if(q)q.style.display='none';
-  el.classList.remove('dragging');el.classList.add('in-slot');
-  slot.appendChild(el);slot.classList.add('filled');
-  updateCounter();
-}
-function returnToPool(el){
-  const slot=el.closest('.drop-slot');
-  if(slot){slot.classList.remove('filled');const q=slot.querySelector('.sq');if(q)q.style.display=''}
-  el.classList.remove('in-slot');
-  document.getElementById('teamPool').appendChild(el);
-  updateCounter();
-}
+function placeInSlot(el,slot){const q=slot.querySelector('.sq');if(q)q.style.display='none';el.classList.remove('dragging');el.classList.add('in-slot');slot.appendChild(el);slot.classList.add('filled');updateCounter()}
+function returnToPool(el){const slot=el.closest('.drop-slot');if(slot){slot.classList.remove('filled');const q=slot.querySelector('.sq');if(q)q.style.display=''}el.classList.remove('in-slot');document.getElementById('teamPool').appendChild(el);updateCounter()}
 function updateCounter(){
   const n=document.querySelectorAll('.drop-slot.filled').length;
   document.getElementById('counter').textContent=n;
   document.getElementById('completionBanner').classList.toggle('show',n===16);
+  document.getElementById('btnSave').disabled=(n<16);
 }
 function resetAll(){
   const pool=document.getElementById('teamPool');
-  document.querySelectorAll('.drop-slot').forEach(slot=>{
-    const t=slot.querySelector('.team-logo');
-    if(t){t.classList.remove('in-slot');pool.appendChild(t)}
-    slot.classList.remove('filled');
-    const q=slot.querySelector('.sq');if(q)q.style.display='';
-  });
+  document.querySelectorAll('.drop-slot').forEach(slot=>{const t=slot.querySelector('.team-logo');if(t){t.classList.remove('in-slot');pool.appendChild(t)}slot.classList.remove('filled');const q=slot.querySelector('.sq');if(q)q.style.display=''});
   updateCounter();
+}
+
+// ===== SCREENSHOT =====
+async function saveScreenshot(){
+  const overlay=document.getElementById('saveOverlay');
+  overlay.classList.add('show');
+
+  // Hide pool & completion banner for clean screenshot
+  const poolWrap=document.getElementById('poolWrap');
+  const completion=document.getElementById('completionBanner');
+  const poolDisplay=poolWrap.style.display;
+  const compDisplay=completion.style.display;
+  poolWrap.style.display='none';
+  completion.style.display='none';
+
+  // Ensure bracket is scrolled to start
+  const scrollEl=document.getElementById('bracketScroll');
+  const oldScroll=scrollEl.scrollLeft;
+  scrollEl.scrollLeft=0;
+
+  await new Promise(r=>setTimeout(r,200));
+
+  try{
+    const area=document.getElementById('captureArea');
+    const canvas=await html2canvas(area,{
+      backgroundColor:'#091020',
+      scale:2,
+      useCORS:true,
+      allowTaint:true,
+      scrollX:0,scrollY:0,
+      windowWidth:area.scrollWidth+40,
+    });
+
+    // Download
+    const link=document.createElement('a');
+    link.download='BestFive_Masters_Pickem.png';
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+  }catch(err){
+    console.error('Screenshot failed:',err);
+    alert('Screenshot failed. Please use your device\'s built-in screenshot instead.');
+  }
+
+  // Restore
+  poolWrap.style.display=poolDisplay;
+  completion.style.display=compDisplay;
+  scrollEl.scrollLeft=oldScroll;
+  overlay.classList.remove('show');
 }
 
 init();
