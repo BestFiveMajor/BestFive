@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>BestFive Masters Pick'em</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#091020;
+  --bg-card:rgba(15,28,56,0.7);
+  --card-border:rgba(201,168,76,0.1);
+  --gold:#c9a84c;--gold-light:#e8dcc8;--gold-dim:#7a5e1e;
+  --gold-glow:rgba(201,168,76,0.25);
+  --circle-bg:linear-gradient(145deg,#ddd4b8,#b8a878);
+  --circle-border:#9a8858;--circle-text:#4a3e1e;
+  --adv-bg:rgba(20,55,22,0.85);--adv-border:#38a040;--adv-glow:rgba(56,160,64,0.2);--adv-text:#c8f0c8;
+  --elim-bg:rgba(55,18,24,0.4);--elim-border:rgba(160,48,64,0.4);--elim-text:rgba(240,200,204,0.5);
+  --text:#e4ddc8;--text-dim:#5a5545;
+  --line-color:rgba(201,168,76,0.3);
+}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-user-select:none;user-select:none;overflow-x:hidden}
+
+#captureArea{background:var(--bg)}
+
+/* HEADER */
+.header{text-align:center;padding:20px 16px 12px;position:relative}
+.header-logo{height:28px;margin-bottom:6px}
+.header h1{font-family:'Oswald',sans-serif;font-size:clamp(28px,5.5vw,48px);font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);line-height:1.05}
+.header .sub{font-family:'Oswald',sans-serif;font-size:clamp(11px,1.6vw,14px);font-weight:500;color:var(--gold-dim);letter-spacing:5px;text-transform:uppercase;margin-top:2px}
+
+/* STAGE */
+.stage-label{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;letter-spacing:3px;text-transform:uppercase;text-align:center;color:var(--gold);padding:10px 0 4px}
+
+/* POOL */
+.pool-wrap{padding:6px 16px 10px;max-width:1300px;margin:0 auto}
+.pool-label{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);text-align:center;margin-bottom:6px}
+.pool-label span{color:var(--gold)}
+.pool-info{font-size:11px;color:var(--text-dim);text-align:center;margin-bottom:6px}
+.team-pool{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:50px;padding:10px;background:rgba(15,28,56,0.6);border-radius:10px;border:1px solid var(--card-border)}
+
+/* TEAM LOGO */
+.team-logo{width:44px;height:44px;border-radius:50%;background:#161830;border:2px solid rgba(255,255,255,0.1);cursor:grab;position:relative;overflow:hidden;transition:transform .15s,border-color .15s,box-shadow .15s;flex-shrink:0}
+.team-logo:active{cursor:grabbing}
+.team-logo:hover{border-color:var(--gold);transform:scale(1.12);box-shadow:0 0 10px var(--gold-glow);z-index:10}
+.team-logo img{width:100%;height:100%;object-fit:contain;padding:2px;pointer-events:none}
+.team-logo .tip{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.92);color:#fff;font-size:9px;font-weight:600;padding:2px 5px;border-radius:3px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;z-index:100}
+.team-logo:hover .tip{opacity:1}
+.team-logo.dragging{opacity:0.25;transform:scale(0.85)}
+.team-logo.in-slot{width:36px;height:36px}
+
+/* BRACKET */
+.bracket-scroll{overflow-x:auto;overflow-y:visible;padding:10px 20px 8px;-webkit-overflow-scrolling:touch;text-align:center}
+.bracket-scroll::-webkit-scrollbar{height:5px}
+.bracket-scroll::-webkit-scrollbar-track{background:rgba(255,255,255,0.02);border-radius:3px}
+.bracket-scroll::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:3px}
+
+.bracket{display:inline-flex;gap:0;align-items:stretch;position:relative;padding:4px 0}
+.round-col{display:flex;flex-direction:column;justify-content:center;gap:6px;flex-shrink:0;padding:0 16px;position:relative;z-index:1}
+
+/* MATCH BOX (small, context) */
+.match-box{background:var(--bg-card);border:1px solid var(--card-border);border-radius:8px;padding:3px 8px 6px;opacity:0.75;position:relative}
+.box-hdr{font-family:'Oswald',sans-serif;font-size:12px;font-weight:700;color:var(--gold-dim);text-align:center;padding:1px 0 3px;letter-spacing:1px}
+.mr{display:flex;align-items:center;justify-content:center;gap:3px;margin-bottom:2px}
+.mr:last-child{margin-bottom:0}
+.qc{width:22px;height:22px;border-radius:50%;background:var(--circle-bg);border:1.5px solid var(--circle-border);display:flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;color:var(--circle-text);flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,0.3)}
+.vs{font-family:'Oswald',sans-serif;font-size:8px;font-weight:700;color:rgba(255,255,255,0.2);letter-spacing:1px;min-width:14px;text-align:center}
+
+/* RESULT BOX (advance - interactive) */
+.result-box{border-radius:12px;padding:8px 14px 12px;position:relative}
+.result-box.adv{background:var(--adv-bg);border:2px solid var(--adv-border);box-shadow:0 0 20px var(--adv-glow),inset 0 0 20px rgba(56,160,64,0.05)}
+.res-hdr{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;text-align:center;padding:1px 0 8px;letter-spacing:2px;text-transform:uppercase}
+.result-box.adv .res-hdr{color:var(--adv-text)}
+.res-slots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+
+/* STATIC ELIMINATED BOX (non-interactive, muted) */
+.elim-static{background:var(--elim-bg);border:1.5px solid var(--elim-border);border-radius:10px;padding:6px 10px 8px;opacity:0.55}
+.elim-static .res-hdr{font-family:'Oswald',sans-serif;font-size:12px;font-weight:700;text-align:center;padding:1px 0 5px;letter-spacing:1px;color:var(--elim-text)}
+.elim-static .static-circles{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.elim-static .sc{width:24px;height:24px;border-radius:50%;border:1.5px dashed rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-size:12px;font-weight:700;color:rgba(255,255,255,0.1)}
+
+/* DROP SLOT */
+.drop-slot{width:44px;height:44px;border-radius:50%;border:2px dashed rgba(255,255,255,0.2);background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;position:relative}
+/* Larger invisible hit area for easier targeting */
+.drop-slot::after{content:'';position:absolute;top:-8px;left:-8px;right:-8px;bottom:-8px;border-radius:50%}
+.drop-slot .sq{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;color:rgba(255,255,255,0.15)}
+.drop-slot.drag-over{border-color:var(--gold);border-style:solid;background:var(--gold-glow);box-shadow:0 0 18px var(--gold-glow);transform:scale(1.12)}
+.drop-slot.filled{border-style:solid;border-color:rgba(255,255,255,0.2);background:rgba(22,24,48,0.7);padding:1px;cursor:grab}
+.drop-slot.filled.ds-adv{border-color:var(--adv-border)}
+
+/* SPACERS */
+.sp{height:4px}.sp-lg{height:10px}
+
+/* CONNECTOR LINES (SVG overlay) */
+.connector-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:visible}
+.connector-svg path{fill:none;stroke:rgba(201,168,76,0.35);stroke-width:1.5}
+
+/* COMPLETION */
+.completion{display:none;text-align:center;padding:8px 16px;max-width:1300px;margin:2px auto 0}
+.completion.show{display:block}
+.completion p{color:var(--gold);font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.1),transparent);padding:8px;border-radius:8px;border:1px solid rgba(201,168,76,0.15)}
+
+/* ACTIONS */
+.actions{display:flex;gap:12px;justify-content:center;padding:8px 16px 20px;flex-wrap:wrap}
+.btn{font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 28px;border-radius:8px;border:none;cursor:pointer;transition:all .2s}
+.btn-reset{background:rgba(255,255,255,0.06);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08)}
+.btn-reset:hover{background:rgba(255,255,255,0.1);color:var(--text)}
+.btn-save{background:linear-gradient(135deg,var(--gold-dim),var(--gold));color:#0a0a0a}
+.btn-save:hover{box-shadow:0 0 20px var(--gold-glow);transform:translateY(-1px)}
+.btn-save:disabled{opacity:0.3;cursor:not-allowed;transform:none;box-shadow:none}
+
+.watermark{text-align:center;padding:6px 16px 10px;font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;letter-spacing:3px;color:var(--gold-dim);text-transform:uppercase;opacity:0.3}
+
+.touch-ghost{position:fixed;pointer-events:none;z-index:9999;opacity:0.85;transform:translate(-50%,-50%) scale(1.2);filter:drop-shadow(0 4px 12px rgba(0,0,0,0.7));width:44px;height:44px;border-radius:50%}
+.save-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9998;align-items:center;justify-content:center}
+.save-overlay.show{display:flex}
+.save-msg{font-family:'Oswald',sans-serif;font-size:18px;color:var(--gold);letter-spacing:2px}
+
+@media(max-width:600px){
+  .team-logo{width:38px;height:38px}.team-logo.in-slot{width:30px;height:30px}
+  .drop-slot{width:38px;height:38px}.qc{width:20px;height:20px;font-size:10px}
+}
+</style>
+</head>
+<body>
+
+<div id="captureArea">
+  <div class="header">
+    <img src="logos_web/b5_logo.png" class="header-logo" alt="Best Five">
+    <h1>BestFive Masters</h1>
+    <div class="sub">Experience the Major Format</div>
+  </div>
+  <div class="stage-label">— Stage 1 —</div>
+
+  <div class="pool-wrap" id="poolWrap">
+    <div class="pool-label">Pick your 8 advancing teams · <span id="counter">0</span> / 8</div>
+    <div class="pool-info">Drag logos into the green zones · Drag between slots to swap</div>
+    <div class="team-pool" id="teamPool"></div>
+  </div>
+
+  <div class="completion" id="completionBanner">
+    <p>✦ PICK'EM COMPLETE — SAVE &amp; SHARE ✦</p>
+  </div>
+
+  <div class="bracket-scroll" id="bracketScroll">
+    <div class="bracket" id="bracket">
+      <svg class="connector-svg" id="connSvg" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="ah" markerWidth="5" markerHeight="4" refX="4" refY="2" orient="auto"><polygon points="0 0,5 2,0 4" fill="rgba(201,168,76,0.4)"/></marker></defs>
+      </svg>
+      <div class="round-col" id="col0"></div>
+      <div class="round-col" id="col1"></div>
+      <div class="round-col" id="col2"></div>
+      <div class="round-col" id="col3"></div>
+      <div class="round-col" id="col4"></div>
+      <div class="round-col" id="col5"></div>
+    </div>
+  </div>
+
+  <div class="watermark">BestFive Masters · Pick'em Challenge</div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-reset" onclick="resetAll()">Reset All</button>
+  <button class="btn btn-save" id="btnSave" onclick="saveScreenshot()" disabled>Save Screenshot</button>
+</div>
+<div class="save-overlay" id="saveOverlay"><div class="save-msg">Generating image...</div></div>
+
+<script>
+const TOTAL_SLOTS=8;
+const teams=[
+  {id:'ravens',name:'Ravens',logo:'logos_web/Ravens.png'},
+  {id:'excidium',name:'EXCIDIUM',logo:'logos_web/EXCIDIUM_logo_transparent.png'},
+  {id:'mxps',name:'MXPS',logo:'logos_web/MXPS.png'},
+  {id:'genz',name:'GENZ ClaN',logo:'logos_web/GENZ_ClaN.png'},
+  {id:'beyond',name:'Beyond Five',logo:'logos_web/Beyond_Five.png'},
+  {id:'doragon',name:'Doragon Gaming',logo:'logos_web/Doragon_Gaming.png'},
+  {id:'core',name:'CORE',logo:'logos_web/CORE.png'},
+  {id:'ranger',name:'Gaming Ranger',logo:'logos_web/Gaming_Ranger.png'},
+  {id:'ojisan',name:'OJISAN GAMING',logo:'logos_web/OJISAN_GAMING.png'},
+  {id:'shrimp5',name:'SHRIMP5',logo:'logos_web/SHRIMP5.png'},
+  {id:'volt',name:'Volt',logo:'logos_web/volt.png'},
+  {id:'wix',name:'WIX',logo:'logos_web/WIX.png'},
+  {id:'indecay',name:'INDECAY',logo:'logos_web/INDECAY.png'},
+  {id:'megamega',name:'megamega',logo:'logos_web/megamega_1_.png'},
+  {id:'pmother',name:'P-mother',logo:'logos_web/P-mother.png'},
+  {id:'ravens_ac',name:'Ravens AC',logo:'logos_web/Ravens_AC.png'},
+];
+
+let draggedTeam=null,dragSourceSlot=null,touchGhost=null;
+
+/* ===== BUILD ===== */
+function matchRows(n){let h='';for(let i=0;i<n;i++)h+=`<div class="mr"><div class="qc">?</div><span class="vs">VS</span><div class="qc">?</div></div>`;return h}
+function matchBox(id,label,n){return`<div class="match-box" id="${id}"><div class="box-hdr">${label}</div>${matchRows(n)}</div>`}
+function advBox(id,label,slots){let s='';for(let i=0;i<slots;i++)s+=`<div class="drop-slot ds-adv"><span class="sq">?</span></div>`;return`<div class="result-box adv" id="${id}"><div class="res-hdr">${label}</div><div class="res-slots">${s}</div></div>`}
+function elimStatic(id,label,count){let c='';for(let i=0;i<count;i++)c+=`<div class="sc">?</div>`;return`<div class="elim-static" id="${id}"><div class="res-hdr">${label}</div><div class="static-circles">${c}</div></div>`}
+
+function buildBracket(){
+  document.getElementById('col0').innerHTML=matchBox('b00','0 : 0',8);
+  document.getElementById('col1').innerHTML=matchBox('b10','1 : 0',4)+'<div class="sp-lg"></div>'+matchBox('b01','0 : 1',4);
+  document.getElementById('col2').innerHTML=matchBox('b20','2 : 0',2)+'<div class="sp"></div>'+matchBox('b11','1 : 1',4)+'<div class="sp"></div>'+matchBox('b02','0 : 2',2);
+  document.getElementById('col3').innerHTML=
+    advBox('b30','3 : 0  ADVANCE',2)+'<div class="sp"></div>'+
+    matchBox('b21','2 : 1',3)+'<div class="sp"></div>'+
+    matchBox('b12','1 : 2',3)+'<div class="sp"></div>'+
+    elimStatic('b03','0 : 3',2);
+  document.getElementById('col4').innerHTML=
+    advBox('b31','3 : 1  ADVANCE',3)+'<div class="sp"></div>'+
+    matchBox('b22','2 : 2',3)+'<div class="sp"></div>'+
+    elimStatic('b13','1 : 3',3);
+  document.getElementById('col5').innerHTML=
+    advBox('b32','3 : 2  ADVANCE',3)+'<div class="sp-lg"></div>'+
+    elimStatic('b23','2 : 3',3);
+}
+
+/* ===== CONNECTOR LINES ===== */
+const connections=[
+  ['b00','b10'],['b00','b01'],
+  ['b10','b20'],['b10','b11'],
+  ['b01','b11'],['b01','b02'],
+  ['b20','b30'],['b20','b21'],
+  ['b11','b21'],['b11','b12'],
+  ['b02','b12'],['b02','b03'],
+  ['b21','b31'],['b21','b22'],
+  ['b12','b22'],['b12','b13'],
+  ['b22','b32'],['b22','b23']
+];
+
+function connPath(x1,y1,x2,y2){
+  const midX=(x1+x2)/2;
+  const dy=y2-y1;
+  if(Math.abs(dy)<2) return`M${x1},${y1}H${x2}`;
+  const s=dy>0?1:-1;
+  const r=Math.min(5,Math.abs(dy)/2,(x2-x1)/4);
+  return`M${x1},${y1}H${midX-r}Q${midX},${y1} ${midX},${y1+s*r}V${y2-s*r}Q${midX},${y2} ${midX+r},${y2}H${x2}`;
+}
+
+function drawConnectors(){
+  const svg=document.getElementById('connSvg');
+  const bracket=document.getElementById('bracket');
+  const bR=bracket.getBoundingClientRect();
+  const w=bracket.scrollWidth,h=bracket.scrollHeight;
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  svg.style.width=w+'px';svg.style.height=h+'px';
+
+  const srcMap={},dstMap={};
+  connections.forEach(([s,d])=>{
+    if(!srcMap[s])srcMap[s]=[];srcMap[s].push(d);
+    if(!dstMap[d])dstMap[d]=[];dstMap[d].push(s);
+  });
+
+  // Keep existing defs (arrowhead marker)
+  const defs=svg.querySelector('defs').outerHTML;
+  let paths=defs;
+
+  connections.forEach(([sId,dId])=>{
+    const sEl=document.getElementById(sId),dEl=document.getElementById(dId);
+    if(!sEl||!dEl)return;
+    const sr=sEl.getBoundingClientRect(),dr=dEl.getBoundingClientRect();
+
+    const sOuts=srcMap[sId];
+    const sFrac=(sOuts.indexOf(dId)+1)/(sOuts.length+1);
+    const x1=sr.right-bR.left;
+    const y1=sr.top-bR.top+sr.height*sFrac;
+
+    const dIns=dstMap[dId];
+    const dFrac=(dIns.indexOf(sId)+1)/(dIns.length+1);
+    const x2=dr.left-bR.left;
+    const y2=dr.top-bR.top+dr.height*dFrac;
+
+    paths+=`<path d="${connPath(x1,y1,x2,y2)}" marker-end="url(#ah)"/>`;
+  });
+
+  svg.innerHTML=paths;
+}
+
+/* ===== INIT ===== */
+function init(){
+  buildBracket();
+  const pool=document.getElementById('teamPool');
+  teams.forEach(t=>pool.appendChild(createTeamEl(t)));
+
+  // Add events to all drop slots
+  document.querySelectorAll('.drop-slot').forEach(slot=>{
+    slot.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move'});
+    slot.addEventListener('dragenter',e=>{e.preventDefault();const s=e.target.closest('.drop-slot');if(s)s.classList.add('drag-over')});
+    slot.addEventListener('dragleave',e=>{const s=e.target.closest('.drop-slot');if(s)s.classList.remove('drag-over')});
+    slot.addEventListener('drop',onSlotDrop);
+  });
+
+  // Pool also accepts drops (return to pool)
+  const poolEl=document.getElementById('teamPool');
+  poolEl.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move'});
+  poolEl.addEventListener('drop',e=>{e.preventDefault();if(draggedTeam)returnToPool(draggedTeam)});
+
+  requestAnimationFrame(()=>{requestAnimationFrame(drawConnectors)});
+  window.addEventListener('resize',drawConnectors);
+}
+
+function onSlotDrop(e){
+  e.preventDefault();
+  const targetSlot=e.target.closest('.drop-slot');
+  if(!targetSlot||!draggedTeam)return;
+  targetSlot.classList.remove('drag-over');
+
+  const existingInTarget=targetSlot.querySelector('.team-logo');
+
+  if(dragSourceSlot&&existingInTarget&&existingInTarget!==draggedTeam){
+    // SWAP: both slots have logos — swap them
+    const tempTeam=existingInTarget;
+    // Move existing from target to source slot
+    dragSourceSlot.appendChild(tempTeam);
+    // Move dragged to target
+    targetSlot.appendChild(draggedTeam);
+  }else if(existingInTarget&&existingInTarget!==draggedTeam){
+    // Target is filled, dragged comes from pool — send existing back to pool
+    returnToPool(existingInTarget);
+    placeInSlot(draggedTeam,targetSlot);
+  }else if(!existingInTarget){
+    // Target is empty
+    placeInSlot(draggedTeam,targetSlot);
+    if(dragSourceSlot){
+      // Clean up source slot
+      dragSourceSlot.classList.remove('filled');
+      const q=dragSourceSlot.querySelector('.sq');
+      if(q)q.style.display='';
+    }
+  }
+  updateCounter();
+}
+
+function createTeamEl(t){
+  const el=document.createElement('div');el.className='team-logo';el.draggable=true;el.dataset.teamId=t.id;
+  el.innerHTML=`<img src="${t.logo}" alt="${t.name}" draggable="false"><span class="tip">${t.name}</span>`;
+
+  el.addEventListener('dragstart',e=>{
+    draggedTeam=el;
+    dragSourceSlot=el.closest('.drop-slot')||null;
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain',t.id);
+  });
+  el.addEventListener('dragend',()=>{
+    if(draggedTeam)draggedTeam.classList.remove('dragging');
+    draggedTeam=null;dragSourceSlot=null;
+    document.querySelectorAll('.drop-slot').forEach(s=>s.classList.remove('drag-over'));
+  });
+
+  el.addEventListener('touchstart',onTS,{passive:false});
+  el.addEventListener('touchmove',onTM,{passive:false});
+  el.addEventListener('touchend',onTE,{passive:false});
+  el.addEventListener('dblclick',()=>{if(el.closest('.drop-slot'))returnToPool(el)});
+  return el;
+}
+
+/* ===== TOUCH (improved targeting) ===== */
+function findNearestSlot(x,y){
+  let best=null,bestDist=60; // 60px detection radius
+  document.querySelectorAll('.drop-slot').forEach(slot=>{
+    const r=slot.getBoundingClientRect();
+    const cx=r.left+r.width/2,cy=r.top+r.height/2;
+    const dist=Math.sqrt((x-cx)**2+(y-cy)**2);
+    if(dist<bestDist){bestDist=dist;best=slot}
+  });
+  return best;
+}
+
+function onTS(e){
+  const el=e.target.closest('.team-logo');if(!el)return;
+  draggedTeam=el;
+  dragSourceSlot=el.closest('.drop-slot')||null;
+  const t=e.touches[0];
+  touchGhost=el.cloneNode(true);touchGhost.className='team-logo touch-ghost';
+  document.body.appendChild(touchGhost);
+  touchGhost.style.left=t.clientX+'px';touchGhost.style.top=t.clientY+'px';
+  el.classList.add('dragging');e.preventDefault();
+}
+function onTM(e){
+  if(!draggedTeam||!touchGhost)return;e.preventDefault();
+  const t=e.touches[0];
+  touchGhost.style.left=t.clientX+'px';touchGhost.style.top=t.clientY+'px';
+  document.querySelectorAll('.drop-slot').forEach(s=>s.classList.remove('drag-over'));
+  const slot=findNearestSlot(t.clientX,t.clientY);
+  if(slot)slot.classList.add('drag-over');
+}
+function onTE(e){
+  if(!draggedTeam)return;
+  const t=e.changedTouches[0];
+  if(touchGhost){touchGhost.remove();touchGhost=null}
+  document.querySelectorAll('.drop-slot').forEach(s=>s.classList.remove('drag-over'));
+
+  const slot=findNearestSlot(t.clientX,t.clientY);
+  const poolArea=document.elementFromPoint(t.clientX,t.clientY);
+  const isPool=poolArea?poolArea.closest('.team-pool'):null;
+
+  if(slot){
+    const existingInTarget=slot.querySelector('.team-logo');
+    if(dragSourceSlot&&existingInTarget&&existingInTarget!==draggedTeam){
+      // Swap
+      dragSourceSlot.appendChild(existingInTarget);
+      slot.appendChild(draggedTeam);
+    }else if(existingInTarget&&existingInTarget!==draggedTeam){
+      returnToPool(existingInTarget);
+      placeInSlot(draggedTeam,slot);
+    }else if(!existingInTarget){
+      placeInSlot(draggedTeam,slot);
+      if(dragSourceSlot){dragSourceSlot.classList.remove('filled');const q=dragSourceSlot.querySelector('.sq');if(q)q.style.display=''}
+    }
+  }else if(isPool){
+    returnToPool(draggedTeam);
+  }
+
+  draggedTeam.classList.remove('dragging');
+  draggedTeam=null;dragSourceSlot=null;
+  updateCounter();
+}
+
+/* ===== SLOT LOGIC ===== */
+function placeInSlot(el,slot){
+  const q=slot.querySelector('.sq');if(q)q.style.display='none';
+  el.classList.remove('dragging');el.classList.add('in-slot');
+  slot.appendChild(el);slot.classList.add('filled');
+}
+function returnToPool(el){
+  const slot=el.closest('.drop-slot');
+  if(slot){slot.classList.remove('filled');const q=slot.querySelector('.sq');if(q)q.style.display=''}
+  el.classList.remove('in-slot');
+  document.getElementById('teamPool').appendChild(el);
+  updateCounter();
+}
+function updateCounter(){
+  const n=document.querySelectorAll('.drop-slot.filled').length;
+  document.getElementById('counter').textContent=n;
+  document.getElementById('completionBanner').classList.toggle('show',n===TOTAL_SLOTS);
+  document.getElementById('btnSave').disabled=(n<TOTAL_SLOTS);
+}
+function resetAll(){
+  const pool=document.getElementById('teamPool');
+  document.querySelectorAll('.drop-slot').forEach(slot=>{
+    const t=slot.querySelector('.team-logo');
+    if(t){t.classList.remove('in-slot');pool.appendChild(t)}
+    slot.classList.remove('filled');
+    const q=slot.querySelector('.sq');if(q)q.style.display='';
+  });
+  updateCounter();
+}
+
+/* ===== SCREENSHOT ===== */
+async function saveScreenshot(){
+  const overlay=document.getElementById('saveOverlay');overlay.classList.add('show');
+  const poolWrap=document.getElementById('poolWrap');
+  const completion=document.getElementById('completionBanner');
+  const area=document.getElementById('captureArea');
+  const scrollEl=document.getElementById('bracketScroll');
+  const bracket=document.getElementById('bracket');
+
+  const poolD=poolWrap.style.display;const compD=completion.style.display;
+  const oldScroll=scrollEl.scrollLeft;
+
+  poolWrap.style.display='none';completion.style.display='none';
+  scrollEl.scrollLeft=0;
+
+  const bw=bracket.scrollWidth+60;
+  area.style.width=bw+'px';area.style.maxWidth=bw+'px';
+  area.style.margin='0 auto';area.style.overflow='hidden';
+
+  await new Promise(r=>setTimeout(r,300));
+  try{
+    const canvas=await html2canvas(area,{backgroundColor:'#091020',scale:2,useCORS:true,allowTaint:true,scrollX:0,scrollY:-window.scrollY,width:bw});
+    const link=document.createElement('a');link.download='BestFive_Masters_Pickem.png';link.href=canvas.toDataURL('image/png');link.click();
+  }catch(err){console.error(err);alert('Screenshot failed. Please use your device screenshot instead.')}
+
+  area.style.width='';area.style.maxWidth='';area.style.margin='';area.style.overflow='';
+  poolWrap.style.display=poolD;completion.style.display=compD;scrollEl.scrollLeft=oldScroll;
+  overlay.classList.remove('show');
+}
+
+init();
+</script>
+</body>
+</html>
