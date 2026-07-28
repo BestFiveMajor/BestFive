@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BestFive Masters — Swiss & BP Tool</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a1628;color:#e8dcc8;font-family:'Segoe UI',sans-serif;min-height:100vh;padding:24px 16px 60px}
+.wrap{max-width:920px;margin:0 auto}
+h1{font-size:22px;color:#c9a84c;text-align:center;margin-bottom:4px}
+.sub{font-size:12px;color:#8a7a55;text-align:center;margin-bottom:20px}
+
+.round-nav{display:flex;gap:6px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
+.round-btn{padding:6px 14px;border-radius:6px;border:1px solid #2a3a5c;background:#0f1c38;color:#6a7a95;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.round-btn.active{border-color:#c9a84c;color:#c9a84c;background:rgba(201,168,76,.12)}
+.round-btn.done{border-color:#3a6a3a;color:#6aa06a}
+.round-btn.done.active{border-color:#c9a84c;color:#c9a84c}
+
+.hint{font-size:11px;color:#5a6a85;text-align:center;margin-bottom:12px}
+.notice{font-size:11px;padding:8px 14px;border-radius:8px;text-align:center;margin-bottom:12px}
+.notice.warn{background:rgba(200,140,40,.12);border:1px solid rgba(220,160,60,.35);color:#e0b060}
+.notice.info{background:rgba(60,140,200,.1);border:1px solid rgba(80,160,220,.3);color:#7ab0e0}
+
+.matches{margin-bottom:16px}
+.match-row{display:flex;align-items:center;gap:8px;padding:9px 12px;margin-bottom:6px;border-radius:8px;background:#0f1c38;border:1px solid #1e2d4d}
+.match-row.decided{border-color:#2a4a3a;background:#0d1e2c}
+.match-row.bo3{border-left:3px solid #c9a84c}
+.mnum{color:#c9a84c;font-weight:700;font-size:12px;width:18px;flex-shrink:0}
+.bo-tag{font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;flex-shrink:0;letter-spacing:.5px}
+.bo-tag.b1{background:rgba(90,110,140,.2);color:#8a9ab5;border:1px solid rgba(90,110,140,.4)}
+.bo-tag.b3{background:rgba(201,168,76,.18);color:#c9a84c;border:1px solid rgba(201,168,76,.5)}
+.team{flex:1;display:flex;align-items:center;gap:6px;min-width:0}
+.team.right{justify-content:flex-end}
+.tname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tname.win{color:#7ac77a}
+.tname.lose{color:#6a7a95;text-decoration:line-through;opacity:.6}
+.reg{font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;flex-shrink:0}
+.reg.KR{background:rgba(74,122,255,.15);color:#6a9aff;border:1px solid rgba(74,122,255,.4)}
+.reg.JP{background:rgba(255,74,74,.15);color:#ff6a6a;border:1px solid rgba(255,74,74,.4)}
+.winbtn{padding:4px 9px;border-radius:5px;border:1px solid #2a3a5c;background:#132340;color:#7a8aa5;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .15s}
+.winbtn:hover{border-color:#c9a84c;color:#c9a84c}
+.winbtn.sel{background:#2a5a3a;border-color:#4a9a5a;color:#9aff9a}
+.vs{font-size:10px;color:#5a6a85;font-weight:700;flex-shrink:0}
+.rec{font-size:9px;color:#5a6a85;flex-shrink:0}
+.room-in{width:92px;flex-shrink:0;padding:4px 8px;border-radius:5px;border:1px solid #2a3a5c;background:#0a1628;color:#c9a84c;font-size:11px;font-family:Consolas,monospace;text-align:center}
+.room-in::placeholder{color:#3f4d68}
+.room-in:focus{outline:none;border-color:#c9a84c}
+.room-in.filled{border-color:rgba(201,168,76,.55);background:rgba(201,168,76,.08)}
+
+.standings{background:#0f1c38;border:1px solid #1e2d4d;border-radius:10px;padding:14px;margin-bottom:16px}
+.standings h3{font-size:11px;color:#c9a84c;margin-bottom:10px;letter-spacing:1.5px}
+.st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:5px}
+.st-item{display:flex;align-items:center;gap:6px;font-size:11px;padding:4px 8px;border-radius:5px;background:#0a1628}
+.st-item.adv{background:rgba(60,140,60,.15);border:1px solid rgba(80,180,80,.3)}
+.st-item.elim{background:rgba(140,50,50,.12);border:1px solid rgba(180,70,70,.25);opacity:.55}
+.st-rec{color:#c9a84c;font-weight:700;font-size:10px;flex-shrink:0;width:24px}
+.st-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-bh{color:#5a6a85;font-size:9px;flex-shrink:0}
+
+.actions{display:flex;gap:10px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.btn{padding:9px 20px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn-gold{background:#c9a84c;color:#0a1628}.btn-gold:hover:not(:disabled){background:#dbb85c}
+.btn-out{background:#132340;color:#c9a84c;border:1px solid #c9a84c}.btn-out:hover:not(:disabled){background:#1a2a4c}
+.btn-dim{background:#132340;color:#8a7a55;border:1px solid #2a3a5c}.btn-dim:hover{background:#1a2a4c}
+.btn-danger{background:#3a1414;color:#e08080;border:1px solid #8a3a3a}
+.btn-danger:hover{background:#4a1a1a}
+
+.result-wrap{position:relative}
+.result{width:100%;background:#0f1c38;border:1px solid #2a3a5c;border-radius:10px;padding:16px;font-family:Consolas,monospace;font-size:12px;line-height:1.75;color:#ccc;min-height:120px;max-height:440px;resize:vertical;overflow-y:auto}
+.result:focus{outline:none;border-color:#c9a84c}
+.copied{color:#4caf50;font-size:12px;text-align:center;margin-top:8px;height:16px;opacity:0;transition:opacity .3s}
+.copied.show{opacity:1}
+.empty{color:#5a6a85;text-align:center;padding:30px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>BestFive Masters — Stage 1 Swiss &amp; BP Tool</h1>
+<div class="sub">Swiss pairing (Buchholz) · BP coin flip · Server assignment</div>
+
+<div class="round-nav" id="roundNav"></div>
+<div id="noticeBox"></div>
+<div class="hint" id="hint"></div>
+
+<div class="matches" id="matches"></div>
+
+<div class="actions">
+  <button class="btn btn-gold" onclick="rollBP()">Roll BP &amp; Servers</button>
+  <button class="btn btn-gold" onclick="rollCombined()">Matchups + Roll</button>
+  <button class="btn btn-out" id="btnNext" onclick="generateNext()">Generate Next Round</button>
+  <button class="btn btn-out" onclick="showMatchups()">Show Matchups Text</button>
+  <button class="btn btn-out" onclick="copyResult()">Copy</button>
+  <button class="btn btn-danger" id="btnReset" onclick="resetStage()">Reset All</button>
+</div>
+
+<div class="standings" id="standings"></div>
+
+<div class="result-wrap">
+  <textarea class="result" id="result" spellcheck="false" readonly>Results will appear here...</textarea>
+</div>
+<div class="copied" id="copied"></div>
+
+</div>
+
+<script>
+/* ============ DATA ============ */
+const TEAMS = [
+  {n:'Exich',r:'KR',seed:1},{n:'VEGA Gaming',r:'JP',seed:2},
+  {n:'CGC ONE',r:'KR',seed:3},{n:'LD',r:'KR',seed:4},
+  {n:'Helix',r:'JP',seed:5},{n:'Gloria',r:'KR',seed:6},
+  {n:'+w dolboeb',r:'KR',seed:7},{n:'Zenith eSports',r:'JP',seed:8},
+  {n:'Hot Pink',r:'KR',seed:9},{n:'8BallClub',r:'KR',seed:10},
+  {n:'CGC Academy',r:'KR',seed:11},{n:'Ravens AC',r:'JP',seed:12},
+  {n:'clubD',r:'JP',seed:13},{n:'VOLT',r:'JP',seed:14},
+  {n:'VOLT Academy',r:'JP',seed:15},{n:'HACHIMITSU',r:'JP',seed:16},
+];
+
+let currentResult = '';
+let notice = null;
+let resetArmed = false;
+let S = null;
+
+function initStage(){
+  const list = TEAMS.slice().sort((a,b)=>a.seed-b.seed);
+  const N = list.length;
+  const r1 = [];
+  for(let i=0;i<N/2;i++) r1.push({a:list[i].n, b:list[N-1-i].n, winner:null, room:''});
+  S = {rounds:[r1], viewRound:0, stats:{}};
+  recompute();
+}
+
+/* Rebuild all stats by replaying every round — makes editing safe */
+function recompute(){
+  const stats = {};
+  TEAMS.forEach(t=>{ stats[t.n] = {name:t.n, r:t.r, seed:t.seed, w:0, l:0, opps:[]}; });
+  S.rounds.forEach(round=>{
+    round.forEach(m=>{
+      if(!m.winner) return;
+      const loser = m.winner===m.a ? m.b : m.a;
+      stats[m.winner].w++;
+      stats[loser].l++;
+      stats[m.a].opps.push(m.b);
+      stats[m.b].opps.push(m.a);
+    });
+  });
+  S.stats = stats;
+}
+
+initStage();
+
+/* ============ HELPERS ============ */
+const T = n => S.stats[n];
+function buchholz(n){
+  const t = T(n);
+  if(!t) return 0;
+  return t.opps.reduce((s,o)=> s + (S.stats[o] ? S.stats[o].w : 0), 0);
+}
+const rec = t => t.w + '-' + t.l;
+const isAdv = t => t.w >= 3;
+const isElim = t => t.l >= 3;
+const isActive = t => t.w < 3 && t.l < 3;
+
+/* Record of a team BEFORE the given round index */
+function statsBefore(roundIdx){
+  const tmp = {};
+  TEAMS.forEach(t=>{ tmp[t.n] = {w:0,l:0}; });
+  for(let i=0;i<roundIdx;i++){
+    S.rounds[i].forEach(m=>{
+      if(!m.winner) return;
+      const lo = m.winner===m.a ? m.b : m.a;
+      tmp[m.winner].w++;
+      tmp[lo].l++;
+    });
+  }
+  return tmp;
+}
+/* Major rule: BO3 when a win advances (2 wins) or a loss eliminates (2 losses) */
+function boForMatch(m, roundIdx){
+  const s = statsBefore(roundIdx);
+  const a = s[m.a], b = s[m.b];
+  return (a.w===2 || a.l===2 || b.w===2 || b.l===2) ? 3 : 1;
+}
+function recBefore(name, roundIdx){
+  const s = statsBefore(roundIdx)[name];
+  return s.w + '-' + s.l;
+}
+
+/* ============ RENDER ============ */
+function render(){
+  renderNav(); renderNotice(); renderMatches(); renderStandings(); updateBtns();
+}
+
+function renderNav(){
+  let h = '';
+  S.rounds.forEach((r,i)=>{
+    const done = r.length && r.every(m=>m.winner);
+    h += '<button class="round-btn ' + (i===S.viewRound?'active ':'') + (done?'done':'') +
+         '" onclick="viewRound(' + i + ')">Round ' + (i+1) + '</button>';
+  });
+  document.getElementById('roundNav').innerHTML = h;
+}
+
+function renderNotice(){
+  let h = '';
+  if(notice){
+    h = '<div class="notice ' + notice.type + '">' + notice.msg + '</div>';
+  } else if(S.viewRound < S.rounds.length-1){
+    h = '<div class="notice warn">Viewing an earlier round. Changing a result here will clear all later rounds.</div>';
+  }
+  document.getElementById('noticeBox').innerHTML = h;
+}
+
+function renderMatches(){
+  const round = S.rounds[S.viewRound];
+  if(!round || !round.length){
+    document.getElementById('matches').innerHTML = '<div class="empty">No matches in this round.</div>';
+    return;
+  }
+  const ri = S.viewRound;
+  let h = '';
+  round.forEach((m,i)=>{
+    const ta = T(m.a), tb = T(m.b);
+    const aW = m.winner===m.a, bW = m.winner===m.b;
+    const bo = boForMatch(m, ri);
+    h += '<div class="match-row ' + (m.winner?'decided ':'') + (bo===3?'bo3':'') + '">' +
+      '<span class="mnum">' + (i+1) + '</span>' +
+      '<span class="bo-tag ' + (bo===3?'b3':'b1') + '">BO' + bo + '</span>' +
+      '<div class="team">' +
+        '<span class="reg ' + ta.r + '">' + ta.r + '</span>' +
+        '<span class="tname ' + (aW?'win':(bW?'lose':'')) + '">' + ta.name + '</span>' +
+        '<span class="rec">' + recBefore(m.a, ri) + '</span>' +
+      '</div>' +
+      '<button class="winbtn ' + (aW?'sel':'') + '" onclick="setWinner(' + ri + ',' + i + ',0)">W</button>' +
+      '<span class="vs">VS</span>' +
+      '<button class="winbtn ' + (bW?'sel':'') + '" onclick="setWinner(' + ri + ',' + i + ',1)">W</button>' +
+      '<div class="team right">' +
+        '<span class="rec">' + recBefore(m.b, ri) + '</span>' +
+        '<span class="tname ' + (bW?'win':(aW?'lose':'')) + '">' + tb.name + '</span>' +
+        '<span class="reg ' + tb.r + '">' + tb.r + '</span>' +
+      '</div>' +
+      '<input class="room-in' + (m.room?' filled':'') + '" value="' + escAttr(m.room||'') +
+        '" placeholder="Room #" oninput="setRoom(' + ri + ',' + i + ',this)">' +
+    '</div>';
+  });
+  document.getElementById('matches').innerHTML = h;
+}
+
+function renderStandings(){
+  const arr = Object.keys(S.stats).map(k=>S.stats[k]).sort((a,b)=>{
+    if(b.w!==a.w) return b.w-a.w;
+    if(a.l!==b.l) return a.l-b.l;
+    const d = buchholz(b.name)-buchholz(a.name);
+    return d!==0 ? d : a.seed-b.seed;
+  });
+  let h = '<h3>STANDINGS</h3><div class="st-grid">';
+  arr.forEach(t=>{
+    h += '<div class="st-item ' + (isAdv(t)?'adv':(isElim(t)?'elim':'')) + '">' +
+      '<span class="st-rec">' + rec(t) + '</span>' +
+      '<span class="st-name">' + t.name + '</span>' +
+      '<span class="st-bh">BH' + buchholz(t.name) + '</span>' +
+    '</div>';
+  });
+  document.getElementById('standings').innerHTML = h + '</div>';
+}
+
+function updateBtns(){
+  const round = S.rounds[S.viewRound];
+  const allDone = round && round.length && round.every(m=>m.winner);
+  const isLast = S.viewRound === S.rounds.length-1;
+  const anyActive = Object.keys(S.stats).some(k=>isActive(S.stats[k]));
+  document.getElementById('btnNext').disabled = !(allDone && isLast && anyActive);
+  document.getElementById('hint').textContent = allDone
+    ? (isLast ? (anyActive ? 'All results in — generate the next round.' : 'Stage complete.') : 'Viewing a completed round.')
+    : 'Click "W" next to the winner of each match.';
+
+  const rb = document.getElementById('btnReset');
+  rb.textContent = resetArmed ? 'Click again to confirm' : 'Reset All';
+}
+
+function escAttr(v){
+  return String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ============ ACTIONS ============ */
+function setRoom(roundIdx, matchIdx, el){
+  S.rounds[roundIdx][matchIdx].room = el.value.trim();
+  if(el.value.trim()) el.classList.add('filled'); else el.classList.remove('filled');
+}
+
+function viewRound(i){
+  S.viewRound = i;
+  notice = null;
+  resetArmed = false;
+  render();
+}
+
+function setWinner(roundIdx, matchIdx, side){
+  const m = S.rounds[roundIdx][matchIdx];
+  const winner = side === 0 ? m.a : m.b;
+  const hadLater = roundIdx < S.rounds.length-1;
+
+  if(hadLater){
+    S.rounds = S.rounds.slice(0, roundIdx+1);
+    S.viewRound = roundIdx;
+    notice = {type:'info', msg:'Later rounds were cleared. Update the results here, then generate the next round again.'};
+  }
+
+  m.winner = (m.winner === winner) ? null : winner;
+  recompute();
+  resetArmed = false;
+  render();
+}
+
+function generateNext(){
+  const active = Object.keys(S.stats).map(k=>S.stats[k]).filter(isActive);
+  const pools = {};
+  active.forEach(t=>{
+    const k = rec(t);
+    if(!pools[k]) pools[k] = [];
+    pools[k].push(t);
+  });
+
+  const newRound = [];
+  Object.keys(pools).sort((a,b)=>{
+    const pa = a.split('-').map(Number), pb = b.split('-').map(Number);
+    return pb[0]!==pa[0] ? pb[0]-pa[0] : pa[1]-pb[1];
+  }).forEach(key=>{
+    const pool = pools[key].sort((x,y)=>{
+      const d = buchholz(y.name)-buchholz(x.name);
+      return d!==0 ? d : x.seed-y.seed;
+    });
+    const used = {};
+    for(let i=0;i<pool.length;i++){
+      const A = pool[i];
+      if(used[A.name]) continue;
+      let p = null;
+      for(let j=pool.length-1;j>i;j--){
+        const B = pool[j];
+        if(used[B.name] || A.opps.indexOf(B.name) !== -1) continue;
+        p = B; break;
+      }
+      if(!p){
+        for(let j=pool.length-1;j>i;j--){
+          const B = pool[j];
+          if(used[B.name]) continue;
+          p = B; break;
+        }
+      }
+      if(p){
+        used[A.name]=1; used[p.name]=1;
+        newRound.push({a:A.name, b:p.name, winner:null, room:''});
+      }
+    }
+  });
+
+  if(!newRound.length){
+    notice = {type:'info', msg:'Stage complete — no further rounds to generate.'};
+    render();
+    return;
+  }
+  S.rounds.push(newRound);
+  S.viewRound = S.rounds.length-1;
+  notice = null;
+  render();
+  showMatchups();
+}
+
+function buildMatchups(){
+  const ri = S.viewRound;
+  const round = S.rounds[ri];
+  if(!round || !round.length) return null;
+  const L = [];
+  L.push('**BestFive Masters — Stage 1 · Round ' + (ri+1) + ' Matchups**');
+  L.push('Paired by Swiss System (Buchholz ranking)');
+  L.push('----------------------------------------');
+  round.forEach((m,i)=>{
+    const bo = boForMatch(m, ri);
+    var line = '**Match ' + (i+1) + '** `' + recBefore(m.a, ri) + '` `BO' + bo + '`  ' + m.a + ' vs ' + m.b;
+    if(m.room) line += '  |  Room: **' + m.room + '**';
+    L.push(line);
+  });
+  L.push('----------------------------------------');
+  return L;
+}
+
+function showMatchups(){
+  const L = buildMatchups();
+  if(!L) return;
+  setResult(L.join('\n'));
+}
+
+/* The team that PICKS the map gives server choice to the opponent.
+   Same-region matches have a fixed default server. */
+function serverInfo(picker, opponent){
+  if(picker.r === opponent.r){
+    return {
+      name: picker.r==='JP' ? 'Tokyo' : 'Seoul',
+      note: 'both ' + picker.r
+    };
+  }
+  return {
+    name: opponent.r==='JP' ? 'Tokyo' : 'Seoul',
+    note: 'chosen by ' + opponent.name
+  };
+}
+function svTxt(picker, opponent){
+  const s = serverInfo(picker, opponent);
+  return '**' + s.name + '** (' + s.note + ')';
+}
+
+function buildRoll(withHeader){
+  const ri = S.viewRound;
+  const round = S.rounds[ri];
+  if(!round || !round.length) return null;
+  const L = [];
+  if(withHeader){
+    L.push('**BestFive Masters — Stage 1 · Round ' + (ri+1) + '**');
+  }
+  L.push('BP Coin Flip & Server Assignment');
+  L.push('_Rule: the team that picks the map lets the opponent choose the server._');
+  L.push('----------------------------------------');
+  round.forEach((m,i)=>{
+    const ta = T(m.a), tb = T(m.b);
+    const bo = boForMatch(m, ri);
+    let rA = Math.floor(Math.random()*100)+1;
+    let rB = Math.floor(Math.random()*100)+1;
+    while(rA===rB) rB = Math.floor(Math.random()*100)+1;
+    const aWins = rA > rB;
+    const W = aWins ? ta : tb;
+    const Lo = aWins ? tb : ta;
+    L.push('');
+    var head = '**Match ' + (i+1) + '** `BO' + bo + '`  ' + ta.name + ' vs ' + tb.name;
+    if(m.room) head += '  |  Room: **' + m.room + '**';
+    L.push(head);
+    L.push('🎲 ' + ta.name + ': **' + rA + '**   |   🎲 ' + tb.name + ': **' + rB + '**');
+    if(bo===1){
+      L.push('🏆 **' + W.name + '** picks first  ->  Server: ' + svTxt(W, Lo));
+    } else {
+      L.push('🏆 **' + W.name + '** bans first');
+      L.push('   Map 1 — **' + W.name + '** picks  ->  Server: ' + svTxt(W, Lo));
+      L.push('   Map 2 — **' + Lo.name + '** picks  ->  Server: ' + svTxt(Lo, W));
+      L.push('   Map 3 — **' + W.name + '** picks  ->  Server: ' + svTxt(W, Lo));
+    }
+  });
+  L.push('');
+  L.push('----------------------------------------');
+  return L;
+}
+
+function rollBP(){
+  const L = buildRoll(true);
+  if(!L) return;
+  setResult(L.join('\n'));
+}
+
+function rollCombined(){
+  const M = buildMatchups();
+  const R = buildRoll(false);
+  if(!M || !R) return;
+  setResult(M.join('\n') + '\n\n' + R.join('\n'));
+}
+
+function setResult(txt){
+  currentResult = txt;
+  document.getElementById('result').value = txt;
+}
+
+function flash(msg, ok){
+  const c = document.getElementById('copied');
+  c.textContent = msg;
+  c.style.color = ok ? '#4caf50' : '#e08080';
+  c.classList.add('show');
+  setTimeout(()=>c.classList.remove('show'), 2200);
+}
+
+function copyResult(){
+  if(!currentResult){ flash('Nothing to copy yet', false); return; }
+  const ta = document.getElementById('result');
+  ta.removeAttribute('readonly');
+  ta.focus();
+  ta.select();
+  ta.setSelectionRange(0, currentResult.length);
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch(e) { ok = false; }
+  ta.setAttribute('readonly','readonly');
+  if(ok){
+    flash('Copied to clipboard', true);
+  } else if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(currentResult)
+      .then(()=>flash('Copied to clipboard', true))
+      .catch(()=>flash('Copy blocked — text is selected, press Ctrl/Cmd+C', false));
+  } else {
+    flash('Copy blocked — text is selected, press Ctrl/Cmd+C', false);
+  }
+}
+
+function resetStage(){
+  if(!resetArmed){
+    resetArmed = true;
+    notice = {type:'warn', msg:'Click "Click again to confirm" to wipe all results and start over.'};
+    render();
+    setTimeout(()=>{ if(resetArmed){ resetArmed=false; notice=null; render(); } }, 5000);
+    return;
+  }
+  resetArmed = false;
+  initStage();
+  setResult('');
+  document.getElementById('result').value = 'Results will appear here...';
+  currentResult = '';
+  notice = {type:'info', msg:'All results cleared. Round 1 restored to seed order.'};
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
