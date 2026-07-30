@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bulk Entry — BestFive Masters Pick'em</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#c9a84c;--gold-l:#e8dcc8;--gold-d:#8a7a55;--bg:#0a1628;--card:#0f1c38;--bd:#1e2d4d;--adv:#4caf50}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--gold-l);font-family:'Segoe UI',sans-serif;padding:20px 16px 60px}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-family:'Oswald',sans-serif;font-size:20px;color:var(--gold);text-align:center;letter-spacing:1px}
+.sub{font-size:12px;color:var(--gold-d);text-align:center;margin-bottom:18px}
+
+.bar{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:16px;font-family:'Oswald',sans-serif;font-size:13px}
+.chip{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:5px 14px;letter-spacing:1px}
+.chip b{color:var(--gold)}
+
+.slots{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+.grp{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.grp:last-child{margin-bottom:0}
+.glabel{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;color:var(--adv);width:52px;flex-shrink:0}
+.sbox{display:flex;gap:7px}
+.slot{width:46px;height:46px;border-radius:50%;border:2px dashed rgba(255,255,255,.18);background:rgba(255,255,255,.04);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+.slot.next{border-color:var(--gold);border-style:solid;box-shadow:0 0 10px rgba(201,168,76,.4)}
+.slot.filled{border-style:solid;border-color:rgba(76,175,80,.6);background:#161830}
+.slot img{width:100%;height:100%;object-fit:contain;padding:2px;pointer-events:none}
+.slot .ph{font-family:'Oswald',sans-serif;font-size:16px;color:rgba(255,255,255,.18)}
+.slot .ini{font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;color:var(--gold-l);pointer-events:none;text-align:center;line-height:1.1;padding:2px}
+
+.search{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);
+  color:var(--gold-l);font-size:13px;margin-bottom:10px}
+.search:focus{outline:none;border-color:var(--gold)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:7px;margin-bottom:16px}
+.tcard{display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--bd);border-radius:8px;
+  padding:6px 8px;cursor:pointer;transition:.13s;min-width:0}
+.tcard:hover{border-color:var(--gold);background:rgba(201,168,76,.07)}
+.tcard.used{opacity:.28;pointer-events:none}
+.tcard.hit{border-color:var(--gold);background:rgba(201,168,76,.14)}
+.tcard img{width:26px;height:26px;border-radius:50%;background:#161830;object-fit:contain;padding:1px;flex-shrink:0}
+.tcard .tn{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tcard .key{font-family:'Oswald',sans-serif;font-size:9px;color:var(--gold-d);flex-shrink:0;margin-left:auto}
+
+.acts{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+.btn{padding:9px 20px;border:none;border-radius:8px;font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;
+  letter-spacing:1px;cursor:pointer;transition:.2s}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.b-save{background:linear-gradient(135deg,#2d7a3d,#3f9a52);color:#fff}
+.b-save:hover:not(:disabled){background:linear-gradient(135deg,#358c47,#48ab5d)}
+.b-out{background:#132340;color:var(--gold);border:1px solid var(--gold)}
+.b-out:hover{background:#1a2a4c}
+.b-dim{background:#132340;color:var(--gold-d);border:1px solid var(--bd)}
+.b-dim:hover{background:#1a2a4c}
+
+.msg{text-align:center;font-size:12px;min-height:18px;margin-bottom:12px}
+.log{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;max-height:220px;overflow-y:auto}
+.log h3{font-family:'Oswald',sans-serif;font-size:11px;color:var(--gold);letter-spacing:1.5px;margin-bottom:8px}
+.lrow{font-size:11px;color:#9aa;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:8px}
+.lrow:last-child{border:none}
+.lrow .ln{color:var(--gold-d);flex-shrink:0;width:26px}
+.lrow .lt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.help{font-size:11px;color:var(--gold-d);text-align:center;line-height:1.7;margin-top:14px}
+kbd{background:#1a2a4c;border:1px solid var(--bd);border-radius:4px;padding:1px 5px;font-family:monospace;font-size:10px;color:var(--gold-l)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Bulk Entry · Stage 1 Pick'em</h1>
+<div class="sub">Enter historical predictions collected from Twitter/X screenshots</div>
+
+<div class="bar">
+  <span class="chip">In DB: <b id="dbCount">—</b></span>
+  <span class="chip">Added this session: <b id="sessCount">0</b></span>
+  <span class="chip">Filled: <b id="fillCount">0</b> / 8</span>
+</div>
+
+<div class="slots">
+  <div class="grp"><span class="glabel">3 : 0</span><div class="sbox" id="g30"></div></div>
+  <div class="grp"><span class="glabel">3 : 1</span><div class="sbox" id="g31"></div></div>
+  <div class="grp"><span class="glabel">3 : 2</span><div class="sbox" id="g32"></div></div>
+</div>
+
+<input class="search" id="search" placeholder="Type to filter teams, then press Enter to pick the highlighted one…" autocomplete="off">
+
+<div class="grid" id="grid"></div>
+
+<div class="acts">
+  <button class="btn b-save" id="btnSave" onclick="saveEntry()" disabled>Save &amp; Next  (Enter)</button>
+  <button class="btn b-out" onclick="clearSlots()">Clear  (Esc)</button>
+  <button class="btn b-dim" id="btnUndo" onclick="undoLast()" disabled>Undo Last</button>
+  <button class="btn b-dim" onclick="refreshCount()">Refresh Count</button>
+</div>
+
+<div class="msg" id="msg"></div>
+
+<div class="log">
+  <h3>Session Log</h3>
+  <div id="logBody"><div class="lrow"><span class="lt" style="color:#667">Nothing saved yet.</span></div></div>
+</div>
+
+<div class="help">
+  <kbd>1</kbd>–<kbd>9</kbd> <kbd>0</kbd> <kbd>Q</kbd>…<kbd>Y</kbd> pick a team &nbsp;·&nbsp;
+  <kbd>Enter</kbd> save &amp; next &nbsp;·&nbsp; <kbd>Esc</kbd> clear &nbsp;·&nbsp;
+  <kbd>Backspace</kbd> remove last pick<br>
+  Click a filled circle to remove that team. Slots fill top-to-bottom automatically.
+</div>
+
+</div>
+
+<script>
+const DB_URL='https://bestfive-pickem-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+const teams=[
+  {id:'exich',name:'Exich',logo:'logos_web/EXICH.webp'},
+  {id:'vega',name:'VEGA Gaming',logo:'logos_web/VEGA_Gaming.webp'},
+  {id:'cgc_one',name:'CGC ONE',logo:'logos_web/CGC_ONE.webp'},
+  {id:'ld',name:'LD',logo:'logos_web/LD.webp'},
+  {id:'helix',name:'Helix',logo:'logos_web/Helix.webp'},
+  {id:'gloria',name:'Gloria',logo:'logos_web/Gloria.webp'},
+  {id:'wdolboeb',name:'+w dolboeb',logo:'logos_web/w_dolboeb.webp'},
+  {id:'zenith',name:'Zenith eSports',logo:'logos_web/Zenith_eSports.webp'},
+  {id:'hotpink',name:'Hot Pink',logo:'logos_web/Hot_pink.webp'},
+  {id:'8ballclub',name:'8BallClub',logo:'logos_web/8BallClub.webp'},
+  {id:'cgc_academy',name:'CGC Academy',logo:'logos_web/CGC_Academy.webp'},
+  {id:'ravens_ac',name:'Ravens AC',logo:'logos_web/Ravens_AC.webp'},
+  {id:'clubd',name:'clubD',logo:'logos_web/clubD.webp'},
+  {id:'volt',name:'VOLT',logo:'logos_web/VOLT.webp'},
+  {id:'volt_academy',name:'VOLT Academy',logo:'logos_web/VOLT_Academy.webp'},
+  {id:'hachimitsu',name:'HACHIMITSU',logo:'logos_web/HACHIMITSU.webp'},
+];
+const KEYS='1234567890QWERTY';
+const CAP={a30:2,a31:3,a32:3};
+const byId={}; teams.forEach(t=>byId[t.id]=t);
+
+let picks={a30:[],a31:[],a32:[]};
+let sessCount=0;
+let lastKeys=[];      // firebase keys of saved entries (for undo)
+let logRows=[];
+let filterHit=null;
+
+/* ---------- helpers ---------- */
+const totalFilled=()=>picks.a30.length+picks.a31.length+picks.a32.length;
+const usedIds=()=>[].concat(picks.a30,picks.a31,picks.a32);
+function nextSlot(){
+  for(const k of ['a30','a31','a32']) if(picks[k].length<CAP[k]) return k;
+  return null;
+}
+function initials(name){
+  return name.replace(/[^A-Za-z0-9 ]/g,'').split(/\s+/).map(w=>w[0]||'').join('').slice(0,4).toUpperCase();
+}
+function imgTag(t){
+  return '<img src="'+t.logo+'" alt="" onerror="this.outerHTML=\'<span class=&quot;ini&quot;>'+initials(t.name)+'</span>\'">';
+}
+
+/* ---------- render ---------- */
+function renderSlots(){
+  const ns=nextSlot();
+  ['a30','a31','a32'].forEach(k=>{
+    const box=document.getElementById('g'+k.slice(1));
+    let h='';
+    for(let i=0;i<CAP[k];i++){
+      const id=picks[k][i];
+      if(id){
+        const t=byId[id];
+        h+='<div class="slot filled" title="'+t.name+' — click to remove" onclick="removeAt(\''+k+'\','+i+')">'+imgTag(t)+'</div>';
+      }else{
+        const isNext = (k===ns && i===picks[k].length);
+        h+='<div class="slot'+(isNext?' next':'')+'"><span class="ph">?</span></div>';
+      }
+    }
+    box.innerHTML=h;
+  });
+  document.getElementById('fillCount').textContent=totalFilled();
+  document.getElementById('btnSave').disabled=(totalFilled()!==8);
+}
+
+function renderGrid(){
+  const used=usedIds();
+  const q=document.getElementById('search').value.trim().toLowerCase();
+  const matches=[];
+  let h='';
+  teams.forEach((t,i)=>{
+    const isUsed=used.indexOf(t.id)!==-1;
+    const hit=q && t.name.toLowerCase().indexOf(q)!==-1 && !isUsed;
+    if(hit) matches.push(t.id);
+    h+='<div class="tcard'+(isUsed?' used':'')+(hit?' hit':'')+'" onclick="pick(\''+t.id+'\')">'
+      +imgTag(t)+'<span class="tn">'+t.name+'</span><span class="key">'+KEYS[i]+'</span></div>';
+  });
+  document.getElementById('grid').innerHTML=h;
+  filterHit = matches.length ? matches[0] : null;
+}
+
+function renderLog(){
+  const el=document.getElementById('logBody');
+  if(!logRows.length){ el.innerHTML='<div class="lrow"><span class="lt" style="color:#667">Nothing saved yet.</span></div>'; return; }
+  el.innerHTML=logRows.slice().reverse().map(r=>
+    '<div class="lrow"><span class="ln">#'+r.n+'</span><span class="lt">'+r.txt+'</span></div>').join('');
+}
+
+function flash(txt,ok){
+  const m=document.getElementById('msg');
+  m.textContent=txt;
+  m.style.color= ok===true ? '#5cc45c' : (ok===false ? '#e08080' : 'var(--gold-d)');
+}
+
+/* ---------- actions ---------- */
+function pick(id){
+  if(usedIds().indexOf(id)!==-1) return;
+  const k=nextSlot();
+  if(!k){ flash('All 8 slots are filled.',false); return; }
+  picks[k].push(id);
+  document.getElementById('search').value='';
+  renderSlots(); renderGrid();
+  flash('');
+}
+
+function removeAt(k,i){
+  picks[k].splice(i,1);
+  renderSlots(); renderGrid();
+}
+
+function removeLast(){
+  for(const k of ['a32','a31','a30']){
+    if(picks[k].length){ picks[k].pop(); break; }
+  }
+  renderSlots(); renderGrid();
+}
+
+function clearSlots(){
+  picks={a30:[],a31:[],a32:[]};
+  document.getElementById('search').value='';
+  renderSlots(); renderGrid(); flash('');
+}
+
+function saveEntry(){
+  if(totalFilled()!==8) return;
+  const btn=document.getElementById('btnSave');
+  btn.disabled=true; flash('Saving…');
+  const payload={p:{a30:picks.a30.slice(),a31:picks.a31.slice(),a32:picks.a32.slice()},
+                 ts:Date.now(), src:'import'};
+  const summary=picks.a30.map(i=>byId[i].name).join(', ')+' | '
+               +picks.a31.map(i=>byId[i].name).join(', ')+' | '
+               +picks.a32.map(i=>byId[i].name).join(', ');
+  fetch(DB_URL+'/picks.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.json(); })
+    .then(res=>{
+      sessCount++;
+      lastKeys.push(res && res.name ? res.name : null);
+      logRows.push({n:sessCount,txt:summary});
+      document.getElementById('sessCount').textContent=sessCount;
+      document.getElementById('btnUndo').disabled=false;
+      const c=document.getElementById('dbCount');
+      const cur=parseInt(c.textContent,10);
+      if(!isNaN(cur)) c.textContent=cur+1;
+      clearSlots(); renderLog();
+      flash('Saved. Ready for the next one.',true);
+      document.getElementById('search').focus();
+    })
+    .catch(e=>{
+      btn.disabled=false;
+      flash('Save failed: '+e.message+' — nothing was written.',false);
+    });
+}
+
+function undoLast(){
+  const key=lastKeys[lastKeys.length-1];
+  if(!key){ flash('Cannot undo: no key recorded for the last entry.',false); return; }
+  flash('Removing last entry…');
+  fetch(DB_URL+'/picks/'+key+'.json',{method:'DELETE'})
+    .then(r=>{
+      if(!r.ok) throw new Error('delete blocked by rules (http '+r.status+')');
+      lastKeys.pop(); logRows.pop(); sessCount=Math.max(0,sessCount-1);
+      document.getElementById('sessCount').textContent=sessCount;
+      document.getElementById('btnUndo').disabled=!lastKeys.length;
+      const c=document.getElementById('dbCount');
+      const cur=parseInt(c.textContent,10);
+      if(!isNaN(cur)) c.textContent=Math.max(0,cur-1);
+      renderLog(); flash('Last entry removed.',true);
+    })
+    .catch(e=>flash('Undo failed — '+e.message+'. Delete it from the Firebase console instead.',false));
+}
+
+function refreshCount(){
+  flash('Loading count…');
+  fetch(DB_URL+'/picks.json?shallow=true')
+    .then(r=>r.json())
+    .then(d=>{
+      const n=d?Object.keys(d).length:0;
+      document.getElementById('dbCount').textContent=n;
+      flash('Database currently holds '+n+' predictions.',true);
+    })
+    .catch(()=>{ document.getElementById('dbCount').textContent='?'; flash('Could not read count.',false); });
+}
+
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown',e=>{
+  const inSearch = document.activeElement && document.activeElement.id==='search';
+  if(e.key==='Enter'){
+    e.preventDefault();
+    if(inSearch && filterHit){ pick(filterHit); return; }
+    if(totalFilled()===8) saveEntry();
+    return;
+  }
+  if(e.key==='Escape'){ e.preventDefault(); clearSlots(); return; }
+  if(e.key==='Backspace' && (!inSearch || !document.getElementById('search').value)){
+    e.preventDefault(); removeLast(); return;
+  }
+  if(inSearch) return;
+  const idx=KEYS.indexOf(e.key.toUpperCase());
+  if(idx!==-1 && teams[idx]){ e.preventDefault(); pick(teams[idx].id); }
+});
+
+document.getElementById('search').addEventListener('input',renderGrid);
+
+renderSlots(); renderGrid(); renderLog(); refreshCount();
+document.getElementById('search').focus();
+</script>
+</body>
+</html>
