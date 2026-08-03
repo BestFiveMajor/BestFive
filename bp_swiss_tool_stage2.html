@@ -118,10 +118,60 @@ const TEAMS = [
   {n:'Gloria',r:'KR',seed:15},{n:'LD',r:'KR',seed:16},
 ];
 
+const STORAGE_KEY = 'b5m_stage2_swiss_state_v1';
+const STORAGE_VERSION = 1;
 let currentResult = '';
 let notice = null;
 let resetArmed = false;
 let S = null;
+
+function saveState(){
+  if(!S) return;
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      version: STORAGE_VERSION,
+      rounds: S.rounds,
+      viewRound: S.viewRound,
+      currentResult: currentResult,
+      savedAt: Date.now()
+    }));
+  }catch(e){
+    /* The tool still works when storage is unavailable (for example, private browsing restrictions). */
+  }
+}
+
+function restoreState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const saved = JSON.parse(raw);
+    const teamNames = new Set(TEAMS.map(t=>t.n));
+    if(!saved || saved.version!==STORAGE_VERSION || !Array.isArray(saved.rounds) || !saved.rounds.length) return false;
+
+    const rounds = saved.rounds.map(round=>{
+      if(!Array.isArray(round) || !round.length) throw new Error('Invalid round');
+      return round.map(m=>{
+        if(!m || !teamNames.has(m.a) || !teamNames.has(m.b) || m.a===m.b) throw new Error('Invalid match');
+        if(m.winner!==null && m.winner!==m.a && m.winner!==m.b) throw new Error('Invalid winner');
+        return {a:m.a, b:m.b, winner:m.winner||null, room:typeof m.room==='string'?m.room:''};
+      });
+    });
+
+    const view = Number.isInteger(saved.viewRound) ? saved.viewRound : rounds.length-1;
+    S = {rounds:rounds, viewRound:Math.max(0,Math.min(view,rounds.length-1)), stats:{}};
+    currentResult = typeof saved.currentResult==='string' ? saved.currentResult : '';
+    recompute();
+    notice = {type:'info', msg:'Saved progress restored from this browser.'};
+    return true;
+  }catch(e){
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(ignore){}
+    return false;
+  }
+}
+
+function clearSavedState(){
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+}
 
 function initStage(){
   const list = TEAMS.slice().sort((a,b)=>a.seed-b.seed);
@@ -149,7 +199,7 @@ function recompute(){
   S.stats = stats;
 }
 
-initStage();
+if(!restoreState()) initStage();
 
 /* ============ HELPERS ============ */
 const T = n => S.stats[n];
@@ -288,12 +338,14 @@ function escAttr(v){
 function setRoom(roundIdx, matchIdx, el){
   S.rounds[roundIdx][matchIdx].room = el.value.trim();
   if(el.value.trim()) el.classList.add('filled'); else el.classList.remove('filled');
+  saveState();
 }
 
 function viewRound(i){
   S.viewRound = i;
   notice = null;
   resetArmed = false;
+  saveState();
   render();
 }
 
@@ -311,6 +363,7 @@ function setWinner(roundIdx, matchIdx, side){
   m.winner = (m.winner === winner) ? null : winner;
   recompute();
   resetArmed = false;
+  saveState();
   render();
 }
 
@@ -364,6 +417,7 @@ function generateNext(){
   S.rounds.push(newRound);
   S.viewRound = S.rounds.length-1;
   notice = null;
+  saveState();
   render();
   showMatchups();
 }
@@ -466,6 +520,7 @@ function rollCombined(){
 function setResult(txt){
   currentResult = txt;
   document.getElementById('result').value = txt;
+  saveState();
 }
 
 function flash(msg, ok){
@@ -506,6 +561,7 @@ function resetStage(){
     return;
   }
   resetArmed = false;
+  clearSavedState();
   initStage();
   setResult('');
   document.getElementById('result').value = 'Results will appear here...';
@@ -515,6 +571,7 @@ function resetStage(){
 }
 
 render();
+if(currentResult) document.getElementById('result').value = currentResult;
 </script>
 </body>
 </html>
