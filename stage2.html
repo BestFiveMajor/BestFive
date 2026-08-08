@@ -794,23 +794,44 @@ const RESULTS={
     ['cgc_one','hotpink','a']
   ],
   b20:[
-    ['recall','wdolboeb',null],
-    ['nga','ravens',null]
+    ['recall','wdolboeb','b'],
+    ['nga','ravens','b']
   ],
   b11:[
-    ['ataks','excidium',null],
-    ['exich','gloria',null],
-    ['maestro','cgc_one',null],
-    ['cgc','cgc_academy',null]
+    ['ataks','excidium','a'],
+    ['exich','gloria','a'],
+    ['maestro','cgc_one','a'],
+    ['cgc','cgc_academy','a']
   ],
   b02:[
-    ['mxps','helix',null],
-    ['ld','hotpink',null]
+    ['mxps','helix','a'],
+    ['ld','hotpink','a']
+  ],
+  b21:[
+    ['recall','maestro','b'],
+    ['nga','cgc','a'],
+    ['ataks','exich','a']
+  ],
+  b12:[
+    ['excidium','cgc_one','b'],
+    ['gloria','ld','b'],
+    ['mxps','cgc_academy','a']
+  ],
+  b22:[
+    ['recall','ld',null],
+    ['exich','mxps',null],
+    ['cgc','cgc_one',null]
   ]
 };
 
-const ADVANCED={};
-const ELIMINATED={};
+const ADVANCED={
+  b30:['ravens','wdolboeb'],
+  b31:['maestro','ataks','nga']
+};
+const ELIMINATED={
+  b03:['helix','hotpink'],
+  b13:['excidium','gloria','cgc_academy']
+};
 
 function prefillRound0(){
   const byId={}; teams.forEach(t=>byId[t.id]=t);
